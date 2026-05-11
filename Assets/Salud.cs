@@ -20,12 +20,16 @@ public class Salud : MonoBehaviour, IPooleable
         vidaActual = vidaMaxima;
     }
 
+    public float ObtenerPorcentajeVida()
+    {
+        return vidaActual / vidaMaxima;
+    }
+
     public void RecibirDanio(float cantidad)
     {
-        // Check for Bullet Immunity (probabilidad)
         if (gameObject.CompareTag("Player") && Random.value < GameManager.Instance.bulletImmunityChance)
         {
-            return; // Inmune a este ataque
+            return; 
         }
 
         vidaActual -= cantidad;
@@ -54,12 +58,14 @@ public class Salud : MonoBehaviour, IPooleable
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.AddScore(1);
-                // Life Steal si el jugador lo tiene
                 if (GameManager.Instance.hasLifeSteal)
                 {
-                    GameObject jugador = GameObject.FindGameObjectWithTag("Player");
-                    if (jugador != null) jugador.GetComponent<Salud>().Curar(5f);
+                    GameObject[] jugadores = GameObject.FindGameObjectsWithTag("Player");
+                    foreach(GameObject j in jugadores) j.GetComponent<Salud>().Curar(5f);
                 }
+                
+                CombatDirector director = FindObjectOfType<CombatDirector>();
+                if (director != null) director.EnemigoDerrotado();
             }
         }
         else if (gameObject.CompareTag("Player"))

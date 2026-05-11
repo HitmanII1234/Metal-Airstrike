@@ -4,10 +4,14 @@ using UnityEngine.SceneManagement;
 
 public class MenuController : MonoBehaviour
 {
-    [Header("UI Elements")]
+    [Header("UI Elements Principal")]
     public GameObject panelPrincipal;
     public GameObject panelNombres;
     public TMP_InputField inputName;
+
+    [Header("UI Game Over")]
+    public GameObject panelGameOver;
+    public TextMeshProUGUI textoScoreFinal;
 
     private bool esMultijugador = false;
 
@@ -32,9 +36,32 @@ public class MenuController : MonoBehaviour
             if (GameManager.Instance != null)
                 GameManager.Instance.playerName = inputName.text;
 
-            // Iniciar configuración de cámaras si es multijugador en la siguiente escena
             PlayerPrefs.SetInt("Multijugador", esMultijugador ? 1 : 0);
-            SceneManager.LoadScene("MainLevel");
+            if (GameManager.Instance != null) GameManager.Instance.ResetearEstadisticas();
+            SceneManager.LoadScene("MainLevel"); // Asegúrate que tu escena de juego se llame así
         }
+    }
+
+    public void MostrarGameOver(int score)
+    {
+        if (panelGameOver != null)
+        {
+            panelGameOver.SetActive(true);
+            if (textoScoreFinal != null) textoScoreFinal.text = "SCORE FINAL: " + score;
+        }
+    }
+
+    public void ReiniciarJuego()
+    {
+        Time.timeScale = 1f;
+        if (GameManager.Instance != null) GameManager.Instance.ResetearEstadisticas();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void SalirAlMenu()
+    {
+        Time.timeScale = 1f;
+        if (GameManager.Instance != null) GameManager.Instance.ResetearEstadisticas();
+        SceneManager.LoadScene("MenuPrincipal"); // Asegúrate de que esta escena se llame así
     }
 }

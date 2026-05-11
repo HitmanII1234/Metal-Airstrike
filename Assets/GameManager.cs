@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     public int vidasPorRonda = 1;
     public int rondaActual = 1;
     public int score = 0;
+    public int jugadoresVivos = 1;
     
     // Mejoras (Roguelike - Permanentes)
     public bool hasLifeSteal = false;
@@ -37,8 +38,8 @@ public class GameManager : MonoBehaviour
 
     public void PlayerDied()
     {
-        vidasPorRonda--;
-        if (vidasPorRonda <= 0)
+        jugadoresVivos--;
+        if (jugadoresVivos <= 0)
         {
             GameOver();
         }
@@ -47,13 +48,25 @@ public class GameManager : MonoBehaviour
     void GameOver()
     {
         Debug.Log("Game Over! Score: " + score + " Ronda: " + rondaActual);
-        // Regresar al menu principal o mostrar pantalla de resultados
+        Time.timeScale = 0f; // Pausa el juego
+        
+        MenuController menu = FindObjectOfType<MenuController>();
+        if (menu != null)
+        {
+            menu.MostrarGameOver(score);
+        }
     }
 
     public void SiguienteRonda()
     {
         rondaActual++;
-        vidasPorRonda = 1; // Reinicia vidas (ajustable con mejoras)
-        // Podría llamar a la selección de poderes
+        // Reiniciar jugadores si se desea
+    }
+    
+    public void ResetearEstadisticas()
+    {
+        score = 0;
+        rondaActual = 1;
+        Time.timeScale = 1f;
     }
 }
