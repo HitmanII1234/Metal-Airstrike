@@ -6,12 +6,14 @@ public class ControlAvion : MonoBehaviour
     public float fuerzaEmpuje = 5f;      
     public float velocidadRetorno = 2f;  
     public float limitesVerticales = 4f;
-    public float limitesHorizontales = 8f; // Nuevo: Límite para A y D
+    public float limitesHorizontales = 8f; 
 
     [Header("Disparo")]
-    public GameObject balaPrefab;
+    public string tagBala = "BalaJugador";
     public Transform puntoDisparo;
     public float danioBala = 25f;
+    public float cadenciaDisparo = 0.2f;
+    private float tiempoProximoDisparo = 0f;
 
     [Header("Inclinación Realista")]
     public float inclinacionMaxima = 20f;
@@ -38,13 +40,11 @@ public class ControlAvion : MonoBehaviour
         float entradaVertical = Input.GetAxis("Vertical");
         float entradaHorizontal = Input.GetAxis("Horizontal");
 
-        // --- MOVIMIENTO VERTICAL (W/S) ---
         if (Mathf.Abs(entradaVertical) > 0.1f)
             yDeseada += entradaVertical * fuerzaEmpuje * Time.deltaTime;
         else
             yDeseada = Mathf.MoveTowards(yDeseada, 0f, velocidadRetorno * Time.deltaTime);
 
-        // --- MOVIMIENTO HORIZONTAL (A/D) ---
         if (Mathf.Abs(entradaHorizontal) > 0.1f)
             xDeseada += entradaHorizontal * fuerzaEmpuje * Time.deltaTime;
 
@@ -57,17 +57,15 @@ public class ControlAvion : MonoBehaviour
             transform.position.z
         );
 
-        // Rotación e Inclinación
         float anguloZ = entradaVertical * inclinacionMaxima;
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, 0, anguloZ), suavidadGiro * Time.deltaTime);
 
-        // --- DISPARO ---
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKey(KeyCode.Space) && Time.time >= tiempoProximoDisparo)
         {
             Disparar();
+            tiempoProximoDisparo = Time.time + cadenciaDisparo;
         }
 
-        // Estelas
         if (estelasAire != null)
         {
             bool estaMoviendose = Mathf.Abs(entradaVertical) > 0.1f || Mathf.Abs(entradaHorizontal) > 0.1f;
@@ -78,8 +76,38 @@ public class ControlAvion : MonoBehaviour
 
     void Disparar()
     {
-        GameObject bala = Instantiate(balaPrefab, puntoDisparo.position, Quaternion.identity);
-        Bala scriptBala = bala.GetComponent<Bala>();
-        scriptBala.danio = danioBala;
+        if (ObjectPool.Instance == null) return;
+
+        bool triple = PowerUpManager.Instance != null && PowerUpManager.Instance.tripleShotActivo;
+
+        SpawnBala(puntoDisparo.position, Quaternion.identity);
+
+        if (triple)
+        {
+            SpawnBala(puntoDisparo.position + Vector3.up * 0.5f, Quaternion.Euler(0, 0, 15));
+            SpawnBala(puntoDisparo.position + Vector3.down * 0.5f, Quaternion.Euler(0, 0, -15));
+        }
+    }
+
+    void SpawnBala(Vector3 pos, Quaternion rot)
+    {
+        string tagAUsar = tagBala;
+        if (PowerUpManager.Instance != null)
+        {
+            if (PowerUpManager.Instance.megaLaserActivo) tagAUsar = "MegaLaser";
+            else if (PowerUpManager.Instance.homingMissilesActivo) tagAUsar = "HomingMissile";
+            else if (PowerUpManager.Instance.bombBulletsActivo) tagAUsar = "BombBullet";
+        }
+
+        GameObject bala = ObjectPool.Instance.SpawnFromPool(tagAUsar, pos, rot);
+        if (bala != null)
+        {
+            Bala scriptBala = bala.GetComponent<Bala>();
+            if (scriptBala != null)
+            {
+                scriptBala.danio = danioBala;
+                scriptBala.balaEnemiga = false;
+            }
+        }
     }
 }

@@ -1,49 +1,95 @@
 using UnityEngine;
 
-public class IAEnemigo : MonoBehaviour
+public enum TipoMovimientoEnemigo { Basico, ZigZag, Bezier }
+
+public class IAEnemigo : MonoBehaviour, IPooleable
 {
+    [Header("Tipo de IA")]
+    public TipoMovimientoEnemigo tipoMovimiento;
+
     [Header("Movimiento")]
     public float velocidad = 3f;
+    public float amplitudZigZag = 2f;
+    public float frecuenciaZigZag = 2f;
 
     [Header("Disparo Automático")]
-    public GameObject balaPrefab;
+    public string tagBala = "BalaEnemiga";
     public Transform puntoDisparo;
-    public float tiempoEntreDisparos = 2f; // El "delay"
+    public float tiempoEntreDisparos = 2f; 
     private float cronometro;
 
-    void Start()
+    private float yInicial;
+    private float tiempoAparicion;
+
+    // IA Reactiva
+    private Transform jugador;
+    public float distanciaReaccion = 5f;
+
+    public void OnObjectSpawn()
     {
-        // Inicializamos el cronómetro para que no disparen todos al mismo milisegundo al aparecer
+        yInicial = transform.position.y;
+        tiempoAparicion = Time.time;
         cronometro = Random.Range(0f, tiempoEntreDisparos);
+        
+        GameObject pObj = GameObject.FindGameObjectWithTag("Player");
+        if (pObj != null) jugador = pObj.transform;
     }
 
     void Update()
     {
-        // Movimiento horizontal hacia la izquierda
-        transform.Translate(Vector2.left * velocidad * Time.deltaTime);
-
-        // Lógica del Delay
-        cronometro += Time.deltaTime;
-
-        if (cronometro >= tiempoEntreDisparos)
+        float esquivaY = 0f;
+        if (jugador != null && Vector2.Distance(transform.position, jugador.position) < distanciaReaccion)
         {
-            Disparar();
-            cronometro = 0; // Reiniciar el delay
+            esquivaY = Mathf.Sign(transform.position.y - jugador.position.y) * velocidad * 0.5f * Time.deltaTime;
         }
 
-        if (transform.position.x < -15f) Destroy(gameObject);
+        if (tipoMovimiento == TipoMovimientoEnemigo.Basico)
+        {
+            transform.Translate(Vector2.left * velocidad * Time.deltaTime + new Vector2(0, esquivaY));
+        }
+        else if (tipoMovimiento == TipoMovimientoEnemigo.ZigZag)
+        {
+            float newX = transform.position.x - (velocidad * Time.deltaTime);
+            float newY = yInicial + Mathf.Sin((Time.time - tiempoAparicion) * frecuenciaZigZag) * amplitudZigZag;
+            transform.position = new Vector3(newX, newY + esquivaY, transform.position.z);
+        }
+        else if (tipoMovimiento == TipoMovimientoEnemigo.Bezier)
+        {
+            float t = (Time.time - tiempoAparicion) * velocidad * 0.5f;
+            float x = transform.position.x - (velocidad * Time.deltaTime);
+            float y = yInicial + Mathf.Sin(t) * 2f + Mathf.Cos(t * 2f) * 1f;
+            transform.position = new Vector3(x, y + esquivaY, transform.position.z);
+        }
+
+        cronometro += Time.deltaTime;
+
+        float delayActual = tiempoEntreDisparos;
+        if (jugador != null && Vector2.Distance(transform.position, jugador.position) < distanciaReaccion)
+        {
+            delayActual /= 2f; // Ráfagas
+        }
+
+        if (cronometro >= delayActual)
+        {
+            Disparar();
+            cronometro = 0; 
+        }
+
+        if (transform.position.x < -15f) gameObject.SetActive(false);
     }
 
     void Disparar()
     {
-        if (balaPrefab != null && puntoDisparo != null)
+        if (ObjectPool.Instance != null && puntoDisparo != null)
         {
-            GameObject balaObj = Instantiate(balaPrefab, puntoDisparo.position, Quaternion.identity);
-            Bala scriptBala = balaObj.GetComponent<Bala>();
-            
-            if (scriptBala != null)
+            GameObject balaObj = ObjectPool.Instance.SpawnFromPool(tagBala, puntoDisparo.position, Quaternion.identity);
+            if(balaObj != null)
             {
-                scriptBala.balaEnemiga = true; // Marcamos que esta bala es de un bot
+                Bala scriptBala = balaObj.GetComponent<Bala>();
+                if (scriptBala != null)
+                {
+                    scriptBala.balaEnemiga = true; 
+                }
             }
         }
     }

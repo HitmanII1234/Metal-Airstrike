@@ -1,24 +1,29 @@
 using UnityEngine;
 
-public class Bala : MonoBehaviour
+public class Bala : MonoBehaviour, IPooleable
 {
     public float velocidad = 10f;
     public float danio = 25f;
-    public bool balaEnemiga = false; // Si es true, viajará a la izquierda
+    public bool balaEnemiga = false; 
+
+    public void OnObjectSpawn()
+    {
+        // Se llama al reaparecer desde el pool
+    }
 
     void Update()
     {
-        // Si es bala enemiga va a la izquierda (-), si es del jugador a la derecha (+)
         float direccion = balaEnemiga ? -1f : 1f;
         transform.Translate(Vector2.right * direccion * velocidad * Time.deltaTime);
 
-        // Destruir si sale de pantalla
-        if (Mathf.Abs(transform.position.x) > 20f) Destroy(gameObject);
+        if (Mathf.Abs(transform.position.x) > 20f) 
+        {
+            gameObject.SetActive(false);
+        }
     }
 
     void OnTriggerEnter2D(Collider2D otro)
     {
-        // Si la bala es enemiga, solo daña al jugador. Si es del jugador, solo daña al enemigo.
         if (balaEnemiga && otro.CompareTag("Player")) 
         {
             Dañar(otro);
@@ -33,6 +38,6 @@ public class Bala : MonoBehaviour
     {
         Salud salud = objetivo.GetComponent<Salud>();
         if (salud != null) salud.RecibirDanio(danio);
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 }
