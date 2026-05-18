@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5381926531250545104}
   - component: {fileID: 7841328669851858566}
   - component: {fileID: -1127581791645759830}
+  - component: {fileID: 4424817359990799721}
   m_Layer: 6
   m_Name: EnemigoBasico
   m_TagString: Enemigo
@@ -174,6 +175,20 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 14.94, y: 10.24}
   m_EdgeRadius: 0
+--- !u!114 &4424817359990799721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4985088320321134136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99adbbb18c0f54d4798c70fc79842200, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BarraVida
+  saludDestino: {fileID: 0}
+  barraLlenado: {fileID: 0}
 --- !u!1 &6437987046652479056
 GameObject:
   m_ObjectHideFlags: 0

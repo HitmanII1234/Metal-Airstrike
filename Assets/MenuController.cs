@@ -9,6 +9,7 @@ public class MenuController : MonoBehaviour
     public GameObject panelPrincipal;
     public GameObject panelNombres;
     public TMP_InputField inputName;
+    public TMP_InputField inputName2;
 
     [Header("UI Opciones")]
     public GameObject panelOpciones;
@@ -33,6 +34,8 @@ public class MenuController : MonoBehaviour
     private void Start()
     {
         LoadAudioSettings();
+        if (inputName2 != null)
+            inputName2.gameObject.SetActive(false);
     }
 
     public void AbrirOpciones()
@@ -163,6 +166,8 @@ public class MenuController : MonoBehaviour
         esMultijugador = false;
         panelPrincipal.SetActive(false);
         panelNombres.SetActive(true);
+        if (inputName2 != null)
+            inputName2.gameObject.SetActive(false);
     }
 
     public void BotonMultijugador()
@@ -170,19 +175,50 @@ public class MenuController : MonoBehaviour
         esMultijugador = true;
         panelPrincipal.SetActive(false);
         panelNombres.SetActive(true);
+        if (inputName2 != null)
+            inputName2.gameObject.SetActive(true);
+    }
+
+    public void VolverAlMenu()
+    {
+        if (panelNombres != null)
+            panelNombres.SetActive(false);
+
+        if (panelPrincipal != null)
+            panelPrincipal.SetActive(true);
     }
 
     public void EmpezarJuego()
     {
-        if (inputName.text.Trim() != "")
-        {
-            if (GameManager.Instance != null)
-                GameManager.Instance.playerName = inputName.text;
+        string nombre1 = inputName != null ? inputName.text.Trim() : string.Empty;
+        string nombre2 = inputName2 != null ? inputName2.text.Trim() : string.Empty;
 
-            PlayerPrefs.SetInt("Multijugador", esMultijugador ? 1 : 0);
-            if (GameManager.Instance != null) GameManager.Instance.ResetearEstadisticas();
-            SceneManager.LoadScene("MainLevel"); // Asegúrate que tu escena de juego se llame así
+        if (esMultijugador)
+        {
+            if (nombre1 == "" || nombre2 == "")
+                return;
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.playerName = nombre1;
+                GameManager.Instance.player2Name = nombre2;
+            }
         }
+        else
+        {
+            if (nombre1 == "")
+                return;
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.playerName = nombre1;
+                GameManager.Instance.player2Name = string.Empty;
+            }
+        }
+
+        PlayerPrefs.SetInt("Multijugador", esMultijugador ? 1 : 0);
+        if (GameManager.Instance != null) GameManager.Instance.ResetearEstadisticas();
+        SceneManager.LoadScene("MainLevel"); // Asegúrate que tu escena de juego se llame así
     }
 
     public void MostrarGameOver(int score)

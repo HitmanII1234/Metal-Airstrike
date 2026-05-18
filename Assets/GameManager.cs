@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
     
     // Nombres / Records
     public string playerName = "Player";
+    public string player2Name = "Player2";
     
     void Awake()
     {
