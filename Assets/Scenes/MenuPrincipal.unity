@@ -149,7 +149,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 0bf77ad86529f93439ee12e43b43120e, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.711
+  m_Volume: 0.6
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -642,9 +642,9 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: d70ead03f68432c409fed7c6fa844dac, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.6
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -758,8 +758,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
   menuSource: {fileID: 8744416}
-  gameplaySource: {fileID: 0}
-  musicVolume: 1
+  gameplaySource: {fileID: 117258298}
+  musicVolume: 0.6
 --- !u!4 &137543261
 Transform:
   m_ObjectHideFlags: 0

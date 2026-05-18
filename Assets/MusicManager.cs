@@ -24,6 +24,8 @@ public class MusicManager : MonoBehaviour
 
     void Start()
     {
+        // Cargar el volumen guardado
+        musicVolume = PlayerPrefs.GetFloat("MusicVolume", 1f);
         PlayMenuMusic();
         UpdateVolume();
     }

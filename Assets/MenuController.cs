@@ -39,6 +39,29 @@ public class MenuController : MonoBehaviour
 
         if (MusicManager.Instance != null)
             MusicManager.Instance.PlayMenuMusic();
+
+        // Conectar los listeners de los sliders
+        if (sliderMaster != null)
+            sliderMaster.onValueChanged.AddListener(SetMasterVolume);
+
+        if (sliderMusic != null)
+            sliderMusic.onValueChanged.AddListener(SetMusicVolume);
+
+        if (sliderSFX != null)
+            sliderSFX.onValueChanged.AddListener(SetSFXVolume);
+    }
+
+    private void OnDestroy()
+    {
+        // Limpiar los listeners para evitar memory leaks
+        if (sliderMaster != null)
+            sliderMaster.onValueChanged.RemoveListener(SetMasterVolume);
+
+        if (sliderMusic != null)
+            sliderMusic.onValueChanged.RemoveListener(SetMusicVolume);
+
+        if (sliderSFX != null)
+            sliderSFX.onValueChanged.RemoveListener(SetSFXVolume);
     }
 
     public void AbrirOpciones()
