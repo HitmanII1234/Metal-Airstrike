@@ -36,6 +36,9 @@ public class MenuController : MonoBehaviour
         LoadAudioSettings();
         if (inputName2 != null)
             inputName2.gameObject.SetActive(false);
+
+        if (MusicManager.Instance != null)
+            MusicManager.Instance.PlayMenuMusic();
     }
 
     public void AbrirOpciones()
@@ -145,8 +148,11 @@ public class MenuController : MonoBehaviour
 
     private void UpdateMusicVolume()
     {
-        if (musicSource != null)
-            musicSource.volume = masterVolume * musicVolume;
+        float vol = masterVolume * musicVolume;
+        if (MusicManager.Instance != null)
+            MusicManager.Instance.SetMusicVolume(vol);
+        else if (musicSource != null)
+            musicSource.volume = vol;
     }
 
     private void UpdateSFXVolume()
@@ -218,6 +224,7 @@ public class MenuController : MonoBehaviour
 
         PlayerPrefs.SetInt("Multijugador", esMultijugador ? 1 : 0);
         if (GameManager.Instance != null) GameManager.Instance.ResetearEstadisticas();
+        if (MusicManager.Instance != null) MusicManager.Instance.PlayGameplayMusic();
         SceneManager.LoadScene("MainLevel"); // Asegúrate que tu escena de juego se llame así
     }
 
