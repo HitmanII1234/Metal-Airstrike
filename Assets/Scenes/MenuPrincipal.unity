@@ -128,7 +128,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 99285507}
-  - component: {fileID: 99285506}
   - component: {fileID: 99285505}
   m_Layer: 0
   m_Name: MenuControllerObject
@@ -152,23 +151,15 @@ MonoBehaviour:
   panelPrincipal: {fileID: 1383420143}
   panelNombres: {fileID: 2042373823}
   inputName: {fileID: 438101214}
-  panelGameOver: {fileID: 0}
-  textoScoreFinal: {fileID: 0}
---- !u!114 &99285506
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 99285504}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3fc296a03f8714847aa1cbd2ed6dc341, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuController
-  panelPrincipal: {fileID: 0}
-  panelNombres: {fileID: 0}
-  inputName: {fileID: 0}
+  panelOpciones: {fileID: 0}
+  sliderMaster: {fileID: 0}
+  sliderMusic: {fileID: 0}
+  sliderSFX: {fileID: 0}
+  musicSource: {fileID: 0}
+  sfxSources: []
+  fullscreenToggle: {fileID: 0}
+  qualityDropdown: {fileID: 0}
+  optionSubPanels: []
   panelGameOver: {fileID: 0}
   textoScoreFinal: {fileID: 0}
 --- !u!4 &99285507
@@ -399,7 +390,7 @@ MonoBehaviour:
   m_HideSoftKeyboard: 0
   m_CharacterValidation: 0
   m_RegexValue: 
-  m_GlobalPointSize: 14
+  m_GlobalPointSize: 36
   m_CharacterLimit: 0
   m_OnEndEdit:
     m_PersistentCalls:
@@ -857,7 +848,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 562501875}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 99285505}
+        m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
+        m_MethodName: AbrirOpciones
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &562501875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -979,7 +982,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 99285506}
+      - m_Target: {fileID: 99285505}
         m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
         m_MethodName: BotonModoHistoria
         m_Mode: 1
@@ -1249,7 +1252,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 99285506}
+      - m_Target: {fileID: 99285505}
         m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
         m_MethodName: EmpezarJuego
         m_Mode: 1
@@ -1539,7 +1542,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 99285506}
+      - m_Target: {fileID: 99285505}
         m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
         m_MethodName: BotonMultijugador
         m_Mode: 1
@@ -1707,8 +1710,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 14
-  m_fontSizeBase: 14
+  m_fontSize: 36
+  m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2235,7 +2238,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 99285506}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
         m_MethodName: SalirAlMenu
         m_Mode: 1
@@ -2565,8 +2568,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 14
-  m_fontSizeBase: 14
+  m_fontSize: 36
+  m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
