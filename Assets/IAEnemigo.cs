@@ -43,20 +43,26 @@ public class IAEnemigo : MonoBehaviour, IPooleable
             esquivaY = Mathf.Sign(transform.position.y - jugador.position.y) * velocidad * 0.5f * Time.deltaTime;
         }
 
+        float nivelFactor = 1f;
+        if (GameManager.Instance != null)
+        {
+            nivelFactor += 0.05f * (GameManager.Instance.rondaActual - 1);
+        }
+
         if (tipoMovimiento == TipoMovimientoEnemigo.Basico)
         {
-            transform.Translate(Vector2.left * velocidad * Time.deltaTime + new Vector2(0, esquivaY));
+            transform.Translate(Vector2.left * velocidad * nivelFactor * Time.deltaTime + new Vector2(0, esquivaY));
         }
         else if (tipoMovimiento == TipoMovimientoEnemigo.ZigZag)
         {
-            float newX = transform.position.x - (velocidad * Time.deltaTime);
+            float newX = transform.position.x - (velocidad * nivelFactor * Time.deltaTime);
             float newY = yInicial + Mathf.Sin((Time.time - tiempoAparicion) * frecuenciaZigZag) * amplitudZigZag;
             transform.position = new Vector3(newX, newY + esquivaY, transform.position.z);
         }
         else if (tipoMovimiento == TipoMovimientoEnemigo.Bezier)
         {
-            float t = (Time.time - tiempoAparicion) * velocidad * 0.5f;
-            float x = transform.position.x - (velocidad * Time.deltaTime);
+            float t = (Time.time - tiempoAparicion) * velocidad * nivelFactor * 0.5f;
+            float x = transform.position.x - (velocidad * nivelFactor * Time.deltaTime);
             float y = yInicial + Mathf.Sin(t) * 2f + Mathf.Cos(t * 2f) * 1f;
             transform.position = new Vector3(x, y + esquivaY, transform.position.z);
         }
@@ -64,6 +70,11 @@ public class IAEnemigo : MonoBehaviour, IPooleable
         cronometro += Time.deltaTime;
 
         float delayActual = tiempoEntreDisparos;
+        if (GameManager.Instance != null)
+        {
+            delayActual /= 1f + 0.1f * (GameManager.Instance.rondaActual - 1);
+        }
+
         if (jugador != null && Vector2.Distance(transform.position, jugador.position) < distanciaReaccion)
         {
             delayActual /= 2f; // Ráfagas

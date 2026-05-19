@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class CombatDirector : MonoBehaviour
 {
+    public static CombatDirector Instance;
+
     [Header("Configuración de Rondas")]
     public float creditosBase = 100f;
     public float multiplicadorCreditos = 1.2f;
@@ -17,16 +19,25 @@ public class CombatDirector : MonoBehaviour
     public int costoEnemigoIntermedio = 20;
     public int costoEnemigoAvanzado = 40;
 
+    [Header("Escalado de Dificultad")]
+    public float incrementoVelocidadPorNivel = 0.06f;
+    public float incrementoDisparoPorNivel = 0.08f;
+
     private float creditosActuales;
     private int enemigosVivos;
     private float velocidadSpawn = 2f;
+
+    void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
         IniciarRonda();
     }
 
-    void IniciarRonda()
+    public void IniciarRonda()
     {
         creditosActuales = creditosBase * Mathf.Pow(multiplicadorCreditos, GameManager.Instance.rondaActual - 1);
         enemigosVivos = 0;
@@ -35,11 +46,12 @@ public class CombatDirector : MonoBehaviour
 
     IEnumerator RutinaSpawn()
     {
-        float tiempoEspera = velocidadSpawn > 0 ? velocidadSpawn : 2f;
+        float nivelFactor = 1f + incrementoVelocidadPorNivel * (GameManager.Instance.rondaActual - 1);
+        float tiempoEspera = Mathf.Max(0.25f, velocidadSpawn / nivelFactor);
 
         while (creditosActuales > 0 && enemigosVivos < 50)
         {
-            yield return new WaitForSeconds(Random.Range(tiempoEspera - 0.5f, tiempoEspera + 0.5f));
+            yield return new WaitForSeconds(Random.Range(tiempoEspera - 0.4f, tiempoEspera + 0.4f));
 
             string tagEnemigo = "EnemigoBasico";
             int costoEnemigo = costoEnemigoBasico;
@@ -92,8 +104,15 @@ public class CombatDirector : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
 
-        GameManager.Instance.SiguienteRonda();
-        IniciarRonda();
+        if (NivelManager.Instance != null)
+        {
+            NivelManager.Instance.MostrarPantallaSeleccion();
+        }
+        else
+        {
+            GameManager.Instance.SiguienteRonda();
+            IniciarRonda();
+        }
     }
 
     Transform SeleccionarPuntoSpawnValido()

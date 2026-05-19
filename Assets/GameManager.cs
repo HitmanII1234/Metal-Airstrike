@@ -68,6 +68,15 @@ public class GameManager : MonoBehaviour
     {
         score = 0;
         rondaActual = 1;
+        jugadoresVivos = 1;
+        hasLifeSteal = false;
+        bulletImmunityChance = 0f;
+        hasMagnetism = false;
         Time.timeScale = 1f;
+
+        if (PowerUpManager.Instance != null)
+        {
+            PowerUpManager.Instance.ResetPoderes();
+        }
     }
 }

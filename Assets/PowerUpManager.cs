@@ -38,10 +38,12 @@ public class PowerUpManager : MonoBehaviour
     private Salud jugadorSalud;
     private Coroutine autoRegenCoroutine;
     private Coroutine mineTrailCoroutine;
+    private Dictionary<PowerUpType, float> temporizadoresActivos = new Dictionary<PowerUpType, float>();
 
     void Awake()
     {
         Instance = this;
+        ResetPoderes();
     }
 
     void Start()
@@ -50,23 +52,41 @@ public class PowerUpManager : MonoBehaviour
         if (j != null) jugadorSalud = j.GetComponent<Salud>();
     }
 
+    void Update()
+    {
+        if (temporizadoresActivos.Count == 0)
+            return;
+
+        List<PowerUpType> tipos = new List<PowerUpType>(temporizadoresActivos.Keys);
+        foreach (PowerUpType tipo in tipos)
+        {
+            temporizadoresActivos[tipo] -= Time.deltaTime;
+            if (temporizadoresActivos[tipo] <= 0f)
+            {
+                temporizadoresActivos.Remove(tipo);
+                ActivarTemporal(tipo, false);
+            }
+        }
+    }
+
     public void ApplyPowerUp(PowerUpData data)
     {
         if (data.duracion > 0)
         {
-            StartCoroutine(PowerUpRoutine(data));
+            if (temporizadoresActivos.ContainsKey(data.tipo))
+            {
+                temporizadoresActivos[data.tipo] += data.duracion;
+            }
+            else
+            {
+                temporizadoresActivos[data.tipo] = data.duracion;
+                ActivarTemporal(data.tipo, true);
+            }
         }
         else
         {
             ApplyPermanent(data.tipo);
         }
-    }
-
-    IEnumerator PowerUpRoutine(PowerUpData data)
-    {
-        ActivarTemporal(data.tipo, true);
-        yield return new WaitForSeconds(data.duracion);
-        ActivarTemporal(data.tipo, false);
     }
 
     void ActivarTemporal(PowerUpType tipo, bool estado)
@@ -127,6 +147,29 @@ public class PowerUpManager : MonoBehaviour
             {
                 ObjectPool.Instance.SpawnFromPool("Mina", j.transform.position, Quaternion.identity);
             }
+        }
+    }
+
+    public void ResetPoderes()
+    {
+        temporizadoresActivos.Clear();
+        tripleShotActivo = false;
+        megaLaserActivo = false;
+        homingMissilesActivo = false;
+        chainLightningActivo = false;
+        bombBulletsActivo = false;
+        mineTrailActivo = false;
+
+        if (autoRegenCoroutine != null)
+        {
+            StopCoroutine(autoRegenCoroutine);
+            autoRegenCoroutine = null;
+        }
+
+        if (mineTrailCoroutine != null)
+        {
+            StopCoroutine(mineTrailCoroutine);
+            mineTrailCoroutine = null;
         }
     }
 }
