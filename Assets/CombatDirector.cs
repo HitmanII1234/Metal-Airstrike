@@ -46,6 +46,8 @@ public class CombatDirector : MonoBehaviour
 
         while (!rondaCompletada)
         {
+            if (this == null || GameManager.Instance == null) yield break; // Detener corrutina si el manager se destruyó
+
             if (enemigosVivos < 40) // Límite de enemigos en pantalla al mismo tiempo
             {
                 string tagEnemigo = DeterminarEnemigoPorNivel(GameManager.Instance.rondaActual);
@@ -53,6 +55,7 @@ public class CombatDirector : MonoBehaviour
                 Transform spawnPunto = SeleccionarPuntoSpawnValido();
                 if (spawnPunto != null)
                 {
+                    if (ObjectPool.Instance == null) yield break;
                     GameObject enemigo = ObjectPool.Instance.SpawnFromPool(tagEnemigo, spawnPunto.position, Quaternion.identity);
                     if (enemigo != null)
                     {
@@ -129,8 +132,11 @@ public class CombatDirector : MonoBehaviour
 
     Transform SeleccionarPuntoSpawnValido()
     {
+        if (spawnPoints == null) return null;
+
         for (int i = 0; i < spawnPoints.Length; i++)
         {
+            if (spawnPoints[i] == null) continue;
             Transform temp = spawnPoints[i];
             int randomIndex = Random.Range(i, spawnPoints.Length);
             spawnPoints[i] = spawnPoints[randomIndex];
@@ -139,6 +145,7 @@ public class CombatDirector : MonoBehaviour
 
         foreach (Transform punto in spawnPoints)
         {
+            if (punto == null) continue; // Evita acceder a un punto destruido durante la transición de escena
             Collider2D colision = Physics2D.OverlapCircle(punto.position, radioComprobacionSpawn, capaEnemigos);
             if (colision == null)
             {

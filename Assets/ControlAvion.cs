@@ -16,6 +16,11 @@ public class ControlAvion : MonoBehaviour
     private float tiempoProximoDisparo = 0f;
     public bool tieneDobleDisparo = false;
 
+    [Header("Controles Personalizados")]
+    public string ejeVertical = "Vertical";
+    public string ejeHorizontal = "Horizontal";
+    public KeyCode teclaDisparo = KeyCode.Space;
+
     [Header("Inclinación Realista")]
     public float inclinacionMaxima = 20f;
     public float suavidadGiro = 5f;
@@ -38,8 +43,8 @@ public class ControlAvion : MonoBehaviour
         if (helice != null)
             helice.Rotate(Vector3.forward * velocidadHelice * Time.deltaTime);
 
-        float entradaVertical = Input.GetAxis("Vertical");
-        float entradaHorizontal = Input.GetAxis("Horizontal");
+        float entradaVertical = Input.GetAxis(ejeVertical);
+        float entradaHorizontal = Input.GetAxis(ejeHorizontal);
 
         if (Mathf.Abs(entradaVertical) > 0.1f)
             yDeseada += entradaVertical * fuerzaEmpuje * Time.deltaTime;
@@ -61,7 +66,7 @@ public class ControlAvion : MonoBehaviour
         float anguloZ = entradaVertical * inclinacionMaxima;
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, 0, anguloZ), suavidadGiro * Time.deltaTime);
 
-        if (Input.GetKey(KeyCode.Space) && Time.time >= tiempoProximoDisparo)
+        if (Input.GetKey(teclaDisparo) && Time.time >= tiempoProximoDisparo)
         {
             Disparar();
             tiempoProximoDisparo = Time.time + cadenciaDisparo;
