@@ -25,15 +25,43 @@ public class PowerUpData : ScriptableObject
 
 public class PowerUpManager : MonoBehaviour
 {
-    public static PowerUpManager Instance;
+    private static PowerUpManager _instance;
+    public static PowerUpManager Instance
+    {
+        get
+        {
+            if (_instance == null || _instance.todosLosPoderes == null || _instance.todosLosPoderes.Count == 0)
+            {
+                PowerUpManager[] managers = FindObjectsOfType<PowerUpManager>();
+                foreach (PowerUpManager m in managers)
+                {
+                    if (m.todosLosPoderes != null && m.todosLosPoderes.Count > 0)
+                    {
+                        _instance = m;
+                        return _instance;
+                    }
+                }
+                if (managers.Length > 0)
+                    _instance = managers[0];
+            }
+            return _instance;
+        }
+        set
+        {
+            _instance = value;
+        }
+    }
 
     public List<PowerUpData> todosLosPoderes;
-
     private Coroutine autoRegenCoroutine;
 
     void Awake()
     {
-        Instance = this;
+        // Forzamos que se asigne esta instancia si tiene los poderes
+        if (_instance == null || (todosLosPoderes != null && todosLosPoderes.Count > 0))
+        {
+            _instance = this;
+        }
     }
 
     public void ApplyPowerUp(PowerUpData data, int targetPlayerNumber = 1)
