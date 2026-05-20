@@ -273,15 +273,30 @@ public class NivelManager : MonoBehaviour
     public void BotonReintentar()
     {
         Time.timeScale = 1f;
-        if (GameManager.Instance != null) GameManager.Instance.ResetearEstadisticas();
+        
+        // Destruir el GameManager antiguo para evitar conflictos al recargar
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetearEstadisticas();
+            Destroy(GameManager.Instance.gameObject);
+        }
+        
+        // Recargar la escena actual
         UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
     }
 
     public void BotonMenuPrincipal()
     {
         Time.timeScale = 1f;
-        if (GameManager.Instance != null) GameManager.Instance.ResetearEstadisticas();
-        // Asegúrate de que tu escena de menú se llame "MenuPrincipal" en los Build Settings
+        
+        // Destruir el GameManager antiguo para evitar conflictos
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetearEstadisticas();
+            Destroy(GameManager.Instance.gameObject);
+        }
+        
+        // Cargar escena de menú principal
         UnityEngine.SceneManagement.SceneManager.LoadScene("MenuPrincipal"); 
     }
 }
