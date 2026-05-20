@@ -5,27 +5,22 @@ public class CombatDirector : MonoBehaviour
 {
     public static CombatDirector Instance;
 
-    [Header("Configuración de Rondas")]
-    public float creditosBase = 100f;
-    public float multiplicadorCreditos = 1.2f;
+    [Header("Spawning y Enemigos")]
 
     [Header("Spawning")]
     public Transform[] spawnPoints;
     public float radioComprobacionSpawn = 1.5f;
     public LayerMask capaEnemigos;
     
-    [Header("Costos de Enemigos")]
-    public int costoEnemigoBasico = 10;
-    public int costoEnemigoIntermedio = 20;
-    public int costoEnemigoAvanzado = 40;
+    // Ya no usamos costos, generaremos enemigos infinitamente hasta alcanzar el score.
 
     [Header("Escalado de Dificultad")]
     public float incrementoVelocidadPorNivel = 0.06f;
     public float incrementoDisparoPorNivel = 0.08f;
 
-    private float creditosActuales;
     private int enemigosVivos;
     private float velocidadSpawn = 2f;
+    private bool rondaCompletada = false;
 
     void Awake()
     {
@@ -39,7 +34,7 @@ public class CombatDirector : MonoBehaviour
 
     public void IniciarRonda()
     {
-        creditosActuales = creditosBase * Mathf.Pow(multiplicadorCreditos, GameManager.Instance.rondaActual - 1);
+        rondaCompletada = false;
         enemigosVivos = 0;
         StartCoroutine(RutinaSpawn());
     }
@@ -49,42 +44,15 @@ public class CombatDirector : MonoBehaviour
         float nivelFactor = 1f + incrementoVelocidadPorNivel * (GameManager.Instance.rondaActual - 1);
         float tiempoEspera = Mathf.Max(0.25f, velocidadSpawn / nivelFactor);
 
-        while (creditosActuales > 0 && enemigosVivos < 50)
+        while (!rondaCompletada)
         {
-            yield return new WaitForSeconds(Random.Range(tiempoEspera - 0.4f, tiempoEspera + 0.4f));
-
-            string tagEnemigo = "EnemigoBasico";
-            int costoEnemigo = costoEnemigoBasico;
-
-            if (creditosActuales >= costoEnemigoAvanzado)
+            if (enemigosVivos < 40) // Límite de enemigos en pantalla al mismo tiempo
             {
-                if (Random.value > 0.7f)
-                {
-                    tagEnemigo = "EnemigoAvanzado";
-                    costoEnemigo = costoEnemigoAvanzado;
-                }
-                else
-                {
-                    tagEnemigo = "EnemigoIntermedio";
-                    costoEnemigo = costoEnemigoIntermedio;
-                }
-            }
-            else if (creditosActuales >= costoEnemigoIntermedio)
-            {
-                if (Random.value > 0.5f)
-                {
-                    tagEnemigo = "EnemigoIntermedio";
-                    costoEnemigo = costoEnemigoIntermedio;
-                }
-            }
-
-            if (creditosActuales >= costoEnemigo)
-            {
+                string tagEnemigo = DeterminarEnemigoPorNivel(GameManager.Instance.rondaActual);
+                
                 Transform spawnPunto = SeleccionarPuntoSpawnValido();
                 if (spawnPunto != null)
                 {
-                    creditosActuales -= costoEnemigo;
-
                     GameObject enemigo = ObjectPool.Instance.SpawnFromPool(tagEnemigo, spawnPunto.position, Quaternion.identity);
                     if (enemigo != null)
                     {
@@ -97,12 +65,42 @@ public class CombatDirector : MonoBehaviour
                     }
                 }
             }
+            
+            yield return new WaitForSeconds(Random.Range(tiempoEspera - 0.4f, tiempoEspera + 0.4f));
         }
+    }
 
-        while (enemigosVivos > 0)
+    string DeterminarEnemigoPorNivel(int nivel)
+    {
+        float rnd = Random.value; // de 0.0 a 1.0
+
+        if (nivel <= 2)
         {
-            yield return new WaitForSeconds(0.5f);
+            // Nivel 1 y 2: solo básicos
+            return "EnemigoBasico";
         }
+        else if (nivel == 3 || nivel == 4)
+        {
+            // Nivel 3 y 4: pocos intermedios (20%), demás básicos (80%)
+            if (rnd < 0.80f) return "EnemigoBasico";
+            else return "EnemigoIntermedio";
+        }
+        else
+        {
+            // Nivel 5 en adelante: más intermedios, pocos básicos, medios avanzados
+            // 20% Básicos, 50% Intermedios, 30% Avanzados
+            if (rnd < 0.20f) return "EnemigoBasico";
+            else if (rnd < 0.70f) return "EnemigoIntermedio";
+            else return "EnemigoAvanzado";
+        }
+    }
+
+    public void TerminarRondaPorScore()
+    {
+        if (rondaCompletada) return; // Evitar que se llame múltiples veces
+        rondaCompletada = true;
+
+        LimpiarEnemigos();
 
         if (NivelManager.Instance != null)
         {
@@ -113,6 +111,20 @@ public class CombatDirector : MonoBehaviour
             GameManager.Instance.SiguienteRonda();
             IniciarRonda();
         }
+    }
+
+    void LimpiarEnemigos()
+    {
+        // Desactiva todos los enemigos para limpiar la pantalla y que el jugador pueda elegir su poder
+        Salud[] entidades = FindObjectsOfType<Salud>();
+        foreach (Salud s in entidades)
+        {
+            if (!s.gameObject.CompareTag("Player"))
+            {
+                s.gameObject.SetActive(false);
+            }
+        }
+        enemigosVivos = 0;
     }
 
     Transform SeleccionarPuntoSpawnValido()

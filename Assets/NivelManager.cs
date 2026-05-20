@@ -22,6 +22,10 @@ public class NivelManager : MonoBehaviour
     public TextMeshProUGUI textoCarga;
     public float duracionPantallaCarga = 1.25f;
 
+    [Header("Game Over UI")]
+    public GameObject panelGameOver;
+    public TextMeshProUGUI textoScoreFinal;
+
     [Header("Configuración")]
     public int opcionesPorNivel = 3;
 
@@ -39,6 +43,9 @@ public class NivelManager : MonoBehaviour
 
         if (pantallaCarga != null)
             pantallaCarga.SetActive(false);
+
+        if (panelGameOver != null)
+            panelGameOver.SetActive(false);
     }
 
     public void MostrarPantallaSeleccion()
@@ -90,7 +97,20 @@ public class NivelManager : MonoBehaviour
 
     private List<PowerUpData> ElegirPoderesAleatorios()
     {
-        List<PowerUpData> poderDisponible = new List<PowerUpData>(PowerUpManager.Instance.todosLosPoderes);
+        List<PowerUpData> poderDisponible = new List<PowerUpData>();
+        ControlAvion jugador = FindObjectOfType<ControlAvion>();
+
+        foreach (PowerUpData p in PowerUpManager.Instance.todosLosPoderes)
+        {
+            if (p == null) continue; // Evita errores si dejaste algún hueco vacío en el Inspector
+
+            if (p.tipo == PowerUpType.DobleDisparo && jugador != null && jugador.tieneDobleDisparo)
+            {
+                continue; // Si ya tiene doble disparo, no lo metas en la ruleta
+            }
+            poderDisponible.Add(p);
+        }
+
         List<PowerUpData> elegidos = new List<PowerUpData>();
 
         for (int i = 0; i < opcionesPorNivel && poderDisponible.Count > 0; i++)
@@ -126,7 +146,7 @@ public class NivelManager : MonoBehaviour
         {
             pantallaCarga.SetActive(true);
             if (textoCarga != null)
-                textoCarga.text = "Cargando siguiente nivel...";
+                textoCarga.text = "NIVEL " + (GameManager.Instance.rondaActual + 1);
         }
 
         yield return new WaitForSecondsRealtime(duracionPantallaCarga);
@@ -139,5 +159,32 @@ public class NivelManager : MonoBehaviour
 
         if (CombatDirector.Instance != null)
             CombatDirector.Instance.IniciarRonda();
+    }
+
+    public void MostrarGameOver(int scoreFinal)
+    {
+        if (panelGameOver != null)
+        {
+            panelGameOver.SetActive(true);
+        }
+        if (textoScoreFinal != null)
+        {
+            textoScoreFinal.text = "SCORE FINAL:\n" + scoreFinal;
+        }
+    }
+
+    public void BotonReintentar()
+    {
+        Time.timeScale = 1f;
+        if (GameManager.Instance != null) GameManager.Instance.ResetearEstadisticas();
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+    }
+
+    public void BotonMenuPrincipal()
+    {
+        Time.timeScale = 1f;
+        if (GameManager.Instance != null) GameManager.Instance.ResetearEstadisticas();
+        // Asegúrate de que tu escena de menú se llame "MenuPrincipal" en los Build Settings
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MenuPrincipal"); 
     }
 }

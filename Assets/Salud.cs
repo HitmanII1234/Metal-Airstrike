@@ -5,6 +5,13 @@ public class Salud : MonoBehaviour, IPooleable
     public float vidaMaxima = 100f;
     private float vidaActual;
 
+    [Header("Escudos y Regeneración")]
+    public float escudoActual = 0f;
+    public float escudoMaximo = 0f;
+    public float cantidadRegeneracion = 0f;
+    public float cantidadRegeneracionEscudo = 0f;
+    public float reduccionDanio = 0f;
+
     void Start()
     {
         vidaActual = vidaMaxima;
@@ -13,11 +20,13 @@ public class Salud : MonoBehaviour, IPooleable
     void OnEnable()
     {
         vidaActual = vidaMaxima;
+        escudoActual = escudoMaximo;
     }
 
     public void OnObjectSpawn()
     {
         vidaActual = vidaMaxima;
+        escudoActual = escudoMaximo;
     }
 
     public float ObtenerPorcentajeVida()
@@ -25,17 +34,40 @@ public class Salud : MonoBehaviour, IPooleable
         return vidaActual / vidaMaxima;
     }
 
+    public float ObtenerPorcentajeEscudo()
+    {
+        if (escudoMaximo <= 0) return 0;
+        return escudoActual / escudoMaximo;
+    }
+
     public void RecibirDanio(float cantidad)
     {
-        if (gameObject.CompareTag("Player") && Random.value < GameManager.Instance.bulletImmunityChance)
+        // Aplica reducción de daño (ej: 0.1f = 10% menos de daño)
+        cantidad *= (1f - reduccionDanio);
+
+        // El escudo absorbe daño primero
+        if (escudoActual > 0)
         {
-            return; 
+            if (cantidad >= escudoActual)
+            {
+                cantidad -= escudoActual;
+                escudoActual = 0;
+            }
+            else
+            {
+                escudoActual -= cantidad;
+                cantidad = 0;
+            }
         }
 
-        vidaActual -= cantidad;
-        if (vidaActual <= 0)
+        // Si sobra daño, se aplica a la vida
+        if (cantidad > 0)
         {
-            Morir();
+            vidaActual -= cantidad;
+            if (vidaActual <= 0)
+            {
+                Morir();
+            }
         }
     }
 
@@ -45,30 +77,50 @@ public class Salud : MonoBehaviour, IPooleable
         if (vidaActual > vidaMaxima) vidaActual = vidaMaxima;
     }
 
+    public void RecuperarTotalVida()
+    {
+        vidaActual = vidaMaxima;
+    }
+
     public void AumentarVidaMaxima(float porcentaje)
     {
-        vidaMaxima *= (1f + porcentaje);
-        vidaActual = vidaMaxima;
+        float incremento = vidaMaxima * porcentaje;
+        vidaMaxima += incremento;
+        vidaActual += incremento; // Cura la cantidad incrementada también
+    }
+
+    public void MejorarRegeneracion(float cantidad)
+    {
+        cantidadRegeneracion += cantidad;
+    }
+
+    public void ActivarMejoraEscudo(float cantidad)
+    {
+        escudoMaximo += cantidad;
+        escudoActual += cantidad; // Agrega el escudo instantáneamente
     }
 
     void Morir()
     {
-        if (gameObject.CompareTag("Enemigo"))
+        string miTag = gameObject.tag.Trim(); // Limpiar espacios invisibles
+        
+        if (miTag.Contains("Enemigo"))
         {
             if (GameManager.Instance != null)
             {
-                GameManager.Instance.AddScore(1);
-                if (GameManager.Instance.hasLifeSteal)
-                {
-                    GameObject[] jugadores = GameObject.FindGameObjectsWithTag("Player");
-                    foreach(GameObject j in jugadores) j.GetComponent<Salud>().Curar(5f);
-                }
+                int puntos = 100; // Por defecto
+                if (miTag.Contains("Intermedio")) puntos = 150;
+                else if (miTag.Contains("Avanzado")) puntos = 200;
+
+                GameManager.Instance.AddScore(puntos);
                 
-                CombatDirector director = FindObjectOfType<CombatDirector>();
-                if (director != null) director.EnemigoDerrotado();
+                if (CombatDirector.Instance != null) 
+                {
+                    CombatDirector.Instance.EnemigoDerrotado();
+                }
             }
         }
-        else if (gameObject.CompareTag("Player"))
+        else if (miTag == "Player" || gameObject.name.Contains("Player"))
         {
             if (GameManager.Instance != null)
             {

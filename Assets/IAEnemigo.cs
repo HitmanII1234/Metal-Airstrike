@@ -100,6 +100,17 @@ public class IAEnemigo : MonoBehaviour, IPooleable
                 if (scriptBala != null)
                 {
                     scriptBala.balaEnemiga = true; 
+                    
+                    // Escalar el daño del enemigo según la ronda actual (ej: +20% por ronda)
+                    float dañoBase = 15f;
+                    if (GameManager.Instance != null)
+                    {
+                        scriptBala.danio = dañoBase * (1f + (0.2f * (GameManager.Instance.rondaActual - 1)));
+                    }
+                    else
+                    {
+                        scriptBala.danio = dañoBase;
+                    }
                 }
             }
         }

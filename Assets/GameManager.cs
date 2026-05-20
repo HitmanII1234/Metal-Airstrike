@@ -9,12 +9,11 @@ public class GameManager : MonoBehaviour
     public int rondaActual = 1;
     public int score = 0;
     public int jugadoresVivos = 1;
-    
-    // Mejoras (Roguelike - Permanentes)
-    public bool hasLifeSteal = false;
-    public float bulletImmunityChance = 0f;
-    public bool hasMagnetism = false;
-    
+
+    [Header("Progresión por Score")]
+    public float scoreRequeridoActual = 1000f;
+    public float multiplicadorScore = 1.15f;
+    public int scoreObjetivoTotal = 1000;
     // Nombres / Records
     public string playerName = "Player";
     public string player2Name = "Player2";
@@ -35,6 +34,19 @@ public class GameManager : MonoBehaviour
     public void AddScore(int amount)
     {
         score += amount;
+
+        // Comprobar si alcanzamos el score para subir de nivel
+        if (score >= scoreObjetivoTotal)
+        {
+            // Calcular el siguiente objetivo de score
+            scoreRequeridoActual *= multiplicadorScore;
+            scoreObjetivoTotal += Mathf.RoundToInt(scoreRequeridoActual);
+            
+            if (CombatDirector.Instance != null)
+            {
+                CombatDirector.Instance.TerminarRondaPorScore();
+            }
+        }
     }
 
     public void PlayerDied()
@@ -51,10 +63,9 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game Over! Score: " + score + " Ronda: " + rondaActual);
         Time.timeScale = 0f; // Pausa el juego
         
-        MenuController menu = FindObjectOfType<MenuController>();
-        if (menu != null)
+        if (NivelManager.Instance != null)
         {
-            menu.MostrarGameOver(score);
+            NivelManager.Instance.MostrarGameOver(score);
         }
     }
 
@@ -69,9 +80,10 @@ public class GameManager : MonoBehaviour
         score = 0;
         rondaActual = 1;
         jugadoresVivos = 1;
-        hasLifeSteal = false;
-        bulletImmunityChance = 0f;
-        hasMagnetism = false;
+        
+        scoreRequeridoActual = 1000f;
+        scoreObjetivoTotal = 1000;
+
         Time.timeScale = 1f;
 
         if (PowerUpManager.Instance != null)

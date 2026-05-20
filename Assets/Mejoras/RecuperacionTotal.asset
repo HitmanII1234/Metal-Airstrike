@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: RecuperacionTotal
+  m_EditorClassIdentifier: Assembly-CSharp::PowerUpData
+  tipo: 5
+  nombre: "Reparaci\xF3n Total"
+  descripcion: '"Cura tu nave al 100%'
+  icono: {fileID: -7006983481446166781, guid: 278071c56f1dbaa4583518d304fd42c3, type: 3}

@@ -8,6 +8,9 @@ TagManager:
   - Enemigo
   - BalaEnemiga
   - BalaJugador
+  - EnemigoIntermedio
+  - EnemigoAvanzado
+  - 'EnemigoBasico '
   layers:
   - Default
   - TransparentFX

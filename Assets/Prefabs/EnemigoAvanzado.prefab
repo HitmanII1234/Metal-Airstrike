@@ -15,8 +15,8 @@ GameObject:
   - component: {fileID: -1127581791645759830}
   - component: {fileID: 4424817359990799721}
   m_Layer: 6
-  m_Name: EnemigoBasico
-  m_TagString: 'EnemigoBasico '
+  m_Name: EnemigoAvanzado
+  m_TagString: EnemigoAvanzado
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -86,12 +86,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 3
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1346677810775648049, guid: 24cc4b7eeee283e44a9a8c4dff71bc90, type: 3}
+  m_Sprite: {fileID: -7255609425866959422, guid: f6699bc1cc64cb84981864fc4872613c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 14.94, y: 10.24}
+  m_Size: {x: 15.18, y: 10.24}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -108,13 +108,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1ad60e9ba4781b4d85975a889c72014, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IAEnemigo
-  tipoMovimiento: 0
-  velocidad: 3
+  tipoMovimiento: 2
+  velocidad: 5
   amplitudZigZag: 2
   frecuenciaZigZag: 2
   tagBala: BalaEnemiga
   puntoDisparo: {fileID: 2431248714092649684}
-  tiempoEntreDisparos: 3
+  tiempoEntreDisparos: 1.5
   distanciaReaccion: 5
 --- !u!114 &7841328669851858566
 MonoBehaviour:
@@ -128,7 +128,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37c3e109c507c2240942acd8bc3239b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Salud
-  vidaMaxima: 75
+  vidaMaxima: 140
   escudoActual: 0
   escudoMaximo: 0
   cantidadRegeneracion: 0
@@ -172,8 +172,8 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 14.94, y: 10.24}
-    newSize: {x: 14.94, y: 10.24}
+    oldSize: {x: 15.18, y: 10.24}
+    newSize: {x: 15.18, y: 10.24}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0

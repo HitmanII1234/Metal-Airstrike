@@ -24,12 +24,19 @@ public class Bala : MonoBehaviour, IPooleable
 
     void OnTriggerEnter2D(Collider2D otro)
     {
-        if (balaEnemiga && otro.CompareTag("Player")) 
+        Salud saludObj = otro.GetComponent<Salud>();
+        if (saludObj == null) return; // Si no tiene vida, ignorar
+
+        string tagObjetivo = otro.gameObject.tag.Trim();
+        bool esJugador = tagObjetivo == "Player" || otro.name.Contains("Player");
+
+        if (balaEnemiga && esJugador) 
         {
             Dañar(otro);
         }
-        else if (!balaEnemiga && otro.CompareTag("Enemigo"))
+        else if (!balaEnemiga && !esJugador)
         {
+            // Si la bala es nuestra y el objetivo NO es el jugador, asume que es enemigo
             Dañar(otro);
         }
     }

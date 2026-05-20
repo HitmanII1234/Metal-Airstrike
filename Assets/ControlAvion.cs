@@ -14,6 +14,7 @@ public class ControlAvion : MonoBehaviour
     public float danioBala = 25f;
     public float cadenciaDisparo = 0.2f;
     private float tiempoProximoDisparo = 0f;
+    public bool tieneDobleDisparo = false;
 
     [Header("Inclinación Realista")]
     public float inclinacionMaxima = 20f;
@@ -77,29 +78,21 @@ public class ControlAvion : MonoBehaviour
     void Disparar()
     {
         if (ObjectPool.Instance == null) return;
-
-        bool triple = PowerUpManager.Instance != null && PowerUpManager.Instance.tripleShotActivo;
-
-        SpawnBala(puntoDisparo.position, Quaternion.identity);
-
-        if (triple)
+        
+        if (tieneDobleDisparo)
         {
-            SpawnBala(puntoDisparo.position + Vector3.up * 0.5f, Quaternion.Euler(0, 0, 15));
-            SpawnBala(puntoDisparo.position + Vector3.down * 0.5f, Quaternion.Euler(0, 0, -15));
+            SpawnBala(puntoDisparo.position + new Vector3(0, 0.3f, 0), Quaternion.identity);
+            SpawnBala(puntoDisparo.position + new Vector3(0, -0.3f, 0), Quaternion.identity);
+        }
+        else
+        {
+            SpawnBala(puntoDisparo.position, Quaternion.identity);
         }
     }
 
     void SpawnBala(Vector3 pos, Quaternion rot)
     {
-        string tagAUsar = tagBala;
-        if (PowerUpManager.Instance != null)
-        {
-            if (PowerUpManager.Instance.megaLaserActivo) tagAUsar = "MegaLaser";
-            else if (PowerUpManager.Instance.homingMissilesActivo) tagAUsar = "HomingMissile";
-            else if (PowerUpManager.Instance.bombBulletsActivo) tagAUsar = "BombBullet";
-        }
-
-        GameObject bala = ObjectPool.Instance.SpawnFromPool(tagAUsar, pos, rot);
+        GameObject bala = ObjectPool.Instance.SpawnFromPool(tagBala, pos, rot);
         if (bala != null)
         {
             Bala scriptBala = bala.GetComponent<Bala>();

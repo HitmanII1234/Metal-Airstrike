@@ -4,10 +4,14 @@ using System.Collections.Generic;
 
 public enum PowerUpType
 {
-    // Temporales
-    TripleShot, MegaLaser, HomingMissiles, ChainLightning, BombBullets,
-    // Permanentes
-    HealthBoost, AutoRegen, EnergyShield, LifeSteal, BulletImmunity, Magnetism, OrbitalDrone, MineTrail
+    MejoraVelocidadDisparo, // Cadencia
+    MejoraVida,             // +10 HP max
+    MejoraRecuperacionVida, // +2 hp / 5s
+    MejoraEscudo,           // +25 Escudo Maximo
+    DobleDisparo,           // Dispara 2 balas
+    RecuperacionTotalVida,  // Cura vida al 100%
+    RecargaEscudoPorTiempo, // +5 escudo / 15s
+    AumentoResistencia      // Reduce daño recibido
 }
 
 [CreateAssetMenu(fileName = "NewPowerUp", menuName = "PowerUp")]
@@ -17,7 +21,6 @@ public class PowerUpData : ScriptableObject
     public string nombre;
     public string descripcion;
     public Sprite icono;
-    public float duracion; // 0 = permanente
 }
 
 public class PowerUpManager : MonoBehaviour
@@ -25,151 +28,137 @@ public class PowerUpManager : MonoBehaviour
     public static PowerUpManager Instance;
 
     public List<PowerUpData> todosLosPoderes;
-    
-    // Estados activos
-    public bool tripleShotActivo = false;
-    public bool megaLaserActivo = false;
-    public bool homingMissilesActivo = false;
-    public bool chainLightningActivo = false;
-    public bool bombBulletsActivo = false;
-    
-    public bool mineTrailActivo = false;
 
-    private Salud jugadorSalud;
     private Coroutine autoRegenCoroutine;
-    private Coroutine mineTrailCoroutine;
-    private Dictionary<PowerUpType, float> temporizadoresActivos = new Dictionary<PowerUpType, float>();
 
     void Awake()
     {
         Instance = this;
-        ResetPoderes();
-    }
-
-    void Start()
-    {
-        GameObject j = GameObject.FindGameObjectWithTag("Player");
-        if (j != null) jugadorSalud = j.GetComponent<Salud>();
-    }
-
-    void Update()
-    {
-        if (temporizadoresActivos.Count == 0)
-            return;
-
-        List<PowerUpType> tipos = new List<PowerUpType>(temporizadoresActivos.Keys);
-        foreach (PowerUpType tipo in tipos)
-        {
-            temporizadoresActivos[tipo] -= Time.deltaTime;
-            if (temporizadoresActivos[tipo] <= 0f)
-            {
-                temporizadoresActivos.Remove(tipo);
-                ActivarTemporal(tipo, false);
-            }
-        }
     }
 
     public void ApplyPowerUp(PowerUpData data)
     {
-        if (data.duracion > 0)
+        GameObject[] jugadores = GameObject.FindGameObjectsWithTag("Player");
+
+        foreach (GameObject j in jugadores)
         {
-            if (temporizadoresActivos.ContainsKey(data.tipo))
+            if (j == null) continue;
+
+            ControlAvion avion = j.GetComponent<ControlAvion>();
+            Salud salud = j.GetComponent<Salud>();
+
+            switch (data.tipo)
             {
-                temporizadoresActivos[data.tipo] += data.duracion;
+                case PowerUpType.MejoraVelocidadDisparo:
+                    if (avion != null)
+                    {
+                        // Aumenta un 10% la cadencia actual, se stackea haciéndolo más rápido cada vez
+                        avion.cadenciaDisparo *= 0.90f; 
+                        avion.cadenciaDisparo = Mathf.Max(0.05f, avion.cadenciaDisparo);
+                    }
+                    break;
+
+                case PowerUpType.MejoraVida:
+                    if (salud != null)
+                    {
+                        salud.vidaMaxima += 10f; // +10 Vida Maxima (Stackeable)
+                        salud.Curar(10f);
+                    }
+                    break;
+
+                case PowerUpType.MejoraRecuperacionVida:
+                    if (salud != null)
+                    {
+                        salud.cantidadRegeneracion += 2f; // Stackeable
+                    }
+                    if (autoRegenCoroutine == null)
+                    {
+                        autoRegenCoroutine = StartCoroutine(AutoRegenRoutine(jugadores));
+                    }
+                    break;
+
+                case PowerUpType.MejoraEscudo:
+                    if (salud != null)
+                    {
+                        salud.ActivarMejoraEscudo(25f); // Stackeable
+                    }
+                    break;
+
+                case PowerUpType.DobleDisparo:
+                    if (avion != null)
+                    {
+                        avion.tieneDobleDisparo = true;
+                    }
+                    break;
+
+                case PowerUpType.RecuperacionTotalVida:
+                    if (salud != null)
+                    {
+                        salud.RecuperarTotalVida();
+                    }
+                    break;
+
+                case PowerUpType.RecargaEscudoPorTiempo:
+                    if (salud != null)
+                    {
+                        salud.cantidadRegeneracionEscudo += 5f; // Stackeable
+                    }
+                    if (autoRegenCoroutine == null)
+                    {
+                        autoRegenCoroutine = StartCoroutine(AutoRegenRoutine(jugadores));
+                    }
+                    break;
+
+                case PowerUpType.AumentoResistencia:
+                    if (salud != null)
+                    {
+                        // Añade 5% de resistencia por cada vez (se stackea) max 80%
+                        salud.reduccionDanio += 0.05f;
+                        if (salud.reduccionDanio > 0.8f) salud.reduccionDanio = 0.8f;
+                    }
+                    break;
             }
-            else
-            {
-                temporizadoresActivos[data.tipo] = data.duracion;
-                ActivarTemporal(data.tipo, true);
-            }
-        }
-        else
-        {
-            ApplyPermanent(data.tipo);
         }
     }
 
-    void ActivarTemporal(PowerUpType tipo, bool estado)
+    IEnumerator AutoRegenRoutine(GameObject[] jugadores)
     {
-        switch (tipo)
-        {
-            case PowerUpType.TripleShot: tripleShotActivo = estado; break;
-            case PowerUpType.MegaLaser: megaLaserActivo = estado; break;
-            case PowerUpType.HomingMissiles: homingMissilesActivo = estado; break;
-            case PowerUpType.ChainLightning: chainLightningActivo = estado; break;
-            case PowerUpType.BombBullets: bombBulletsActivo = estado; break;
-        }
-    }
-
-    void ApplyPermanent(PowerUpType tipo)
-    {
-        switch (tipo)
-        {
-            case PowerUpType.HealthBoost:
-                if (jugadorSalud != null) jugadorSalud.AumentarVidaMaxima(0.05f);
-                break;
-            case PowerUpType.AutoRegen:
-                if (autoRegenCoroutine == null) autoRegenCoroutine = StartCoroutine(AutoRegenRoutine());
-                break;
-            case PowerUpType.LifeSteal:
-                GameManager.Instance.hasLifeSteal = true;
-                break;
-            case PowerUpType.BulletImmunity:
-                GameManager.Instance.bulletImmunityChance += 0.1f; // 10% probabilidad
-                break;
-            case PowerUpType.Magnetism:
-                GameManager.Instance.hasMagnetism = true;
-                break;
-            case PowerUpType.MineTrail:
-                mineTrailActivo = true;
-                if (mineTrailCoroutine == null) mineTrailCoroutine = StartCoroutine(MineTrailRoutine());
-                break;
-            // Otros (EnergyShield, OrbitalDrone) requerirían sus propios GameObjects/Logicas
-        }
-    }
-
-    IEnumerator AutoRegenRoutine()
-    {
+        int timer = 0;
         while (true)
         {
-            yield return new WaitForSeconds(5f);
-            if (jugadorSalud != null) jugadorSalud.Curar(10f);
-        }
-    }
+            yield return new WaitForSeconds(1f); // Contamos por segundo
+            timer++;
 
-    IEnumerator MineTrailRoutine()
-    {
-        while (mineTrailActivo)
-        {
-            yield return new WaitForSeconds(2f);
-            GameObject j = GameObject.FindGameObjectWithTag("Player");
-            if (j != null && ObjectPool.Instance != null)
+            foreach (GameObject j in jugadores)
             {
-                ObjectPool.Instance.SpawnFromPool("Mina", j.transform.position, Quaternion.identity);
+                if (j != null && j.activeInHierarchy)
+                {
+                    Salud salud = j.GetComponent<Salud>();
+                    if (salud != null)
+                    {
+                        // Cada 5 segundos cura vida
+                        if (timer % 5 == 0 && salud.cantidadRegeneracion > 0)
+                        {
+                            salud.Curar(salud.cantidadRegeneracion);
+                        }
+
+                        // Cada 15 segundos regenera escudo
+                        if (timer % 15 == 0 && salud.cantidadRegeneracionEscudo > 0)
+                        {
+                            salud.ActivarMejoraEscudo(salud.cantidadRegeneracionEscudo);
+                        }
+                    }
+                }
             }
         }
     }
 
     public void ResetPoderes()
     {
-        temporizadoresActivos.Clear();
-        tripleShotActivo = false;
-        megaLaserActivo = false;
-        homingMissilesActivo = false;
-        chainLightningActivo = false;
-        bombBulletsActivo = false;
-        mineTrailActivo = false;
-
         if (autoRegenCoroutine != null)
         {
             StopCoroutine(autoRegenCoroutine);
             autoRegenCoroutine = null;
-        }
-
-        if (mineTrailCoroutine != null)
-        {
-            StopCoroutine(mineTrailCoroutine);
-            mineTrailCoroutine = null;
         }
     }
 }
