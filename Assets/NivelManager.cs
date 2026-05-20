@@ -60,9 +60,27 @@ public class NivelManager : MonoBehaviour
         Debug.Log("[NivelManager] Poderes: " + (PowerUpManager.Instance != null ? PowerUpManager.Instance.todosLosPoderes.Count.ToString() : "PowerUpManager NULO"));
         Debug.Log("[NivelManager] Botones: " + (botonesPoder != null ? botonesPoder.Length.ToString() : "NULL"));
 
-        if (panelSeleccionPoder == null || PowerUpManager.Instance == null || PowerUpManager.Instance.todosLosPoderes == null)
+        if (panelSeleccionPoder == null)
         {
-            Debug.LogError("[NivelManager] Condición inicial falló!");
+            Debug.LogError("[NivelManager] panelSeleccionPoder es NULO!");
+            return;
+        }
+
+        if (PowerUpManager.Instance == null)
+        {
+            Debug.LogError("[NivelManager] PowerUpManager.Instance es NULO!");
+            return;
+        }
+
+        if (PowerUpManager.Instance.todosLosPoderes == null || PowerUpManager.Instance.todosLosPoderes.Count == 0)
+        {
+            Debug.LogError("[NivelManager] todosLosPoderes está vacío o es NULO! Asegúrate de asignar los ScriptableObjects en el Inspector del PowerUpManager.");
+            return;
+        }
+
+        if (botonesPoder == null || botonesPoder.Length == 0)
+        {
+            Debug.LogError("[NivelManager] botonesPoder está vacío o es NULO!");
             return;
         }
 
@@ -83,33 +101,71 @@ public class NivelManager : MonoBehaviour
 
         opcionesActuales = ElegirPoderesAleatorios();
 
+        Debug.Log("[NivelManager] Opciones elegidas: " + opcionesActuales.Count);
+
         for (int i = 0; i < botonesPoder.Length; i++)
         {
+            if (botonesPoder[i] == null)
+            {
+                Debug.LogWarning("[NivelManager] botonesPoder[" + i + "] es NULO!");
+                continue;
+            }
+
             if (i < opcionesActuales.Count)
             {
                 PowerUpData poder = opcionesActuales[i];
+                
+                if (poder == null)
+                {
+                    Debug.LogWarning("[NivelManager] poder en índice " + i + " es NULO!");
+                    botonesPoder[i].gameObject.SetActive(false);
+                    continue;
+                }
+
+                Debug.Log("[NivelManager] Configurando botón " + i + " con poder: " + poder.nombre);
+
                 if (iconosPoder != null && i < iconosPoder.Length && iconosPoder[i] != null)
+                {
                     iconosPoder[i].sprite = poder.icono;
+                    iconosPoder[i].enabled = true;
+                    Debug.Log("[NivelManager] Icono asignado: " + (poder.icono != null ? poder.icono.name : "NULL"));
+                }
+                else
+                {
+                    Debug.LogWarning("[NivelManager] iconosPoder[" + i + "] es NULO o no existe!");
+                }
 
                 if (nombresPoder != null && i < nombresPoder.Length && nombresPoder[i] != null)
+                {
                     nombresPoder[i].text = poder.nombre;
+                    nombresPoder[i].enabled = true;
+                    nombresPoder[i].gameObject.SetActive(true);
+                }
+                else
+                {
+                    Debug.LogWarning("[NivelManager] nombresPoder[" + i + "] es NULO o no existe!");
+                }
 
                 if (descripcionesPoder != null && i < descripcionesPoder.Length && descripcionesPoder[i] != null)
+                {
                     descripcionesPoder[i].text = poder.descripcion;
+                    descripcionesPoder[i].enabled = true;
+                    descripcionesPoder[i].gameObject.SetActive(true);
+                }
+                else
+                {
+                    Debug.LogWarning("[NivelManager] descripcionesPoder[" + i + "] es NULO o no existe!");
+                }
 
                 Button boton = botonesPoder[i];
-                if (boton != null)
-                {
-                    boton.gameObject.SetActive(true);
-                    boton.onClick.RemoveAllListeners();
-                    int opcionIndex = i;
-                    boton.onClick.AddListener(() => SeleccionarPoder(opcionIndex));
-                }
+                boton.gameObject.SetActive(true);
+                boton.onClick.RemoveAllListeners();
+                int opcionIndex = i;
+                boton.onClick.AddListener(() => SeleccionarPoder(opcionIndex));
             }
             else
             {
-                if (botonesPoder[i] != null)
-                    botonesPoder[i].gameObject.SetActive(false);
+                botonesPoder[i].gameObject.SetActive(false);
             }
         }
     }
@@ -119,16 +175,27 @@ public class NivelManager : MonoBehaviour
         List<PowerUpData> poderDisponible = new List<PowerUpData>();
         ControlAvion jugador = FindObjectOfType<ControlAvion>();
 
+        Debug.Log("[NivelManager] Total poderes en PowerUpManager: " + PowerUpManager.Instance.todosLosPoderes.Count);
+
         foreach (PowerUpData p in PowerUpManager.Instance.todosLosPoderes)
         {
-            if (p == null) continue; // Evita errores si dejaste algún hueco vacío en el Inspector
+            if (p == null)
+            {
+                Debug.LogWarning("[NivelManager] Encontrado poder NULO en la lista, saltando...");
+                continue;
+            }
 
             if (p.tipo == PowerUpType.DobleDisparo && jugador != null && jugador.tieneDobleDisparo)
             {
-                continue; // Si ya tiene doble disparo, no lo metas en la ruleta
+                Debug.Log("[NivelManager] Excluyendo DobleDisparo porque el jugador ya lo tiene");
+                continue;
             }
+            
+            Debug.Log("[NivelManager] Poder disponible: " + p.nombre);
             poderDisponible.Add(p);
         }
+
+        Debug.Log("[NivelManager] Poderes disponibles después de filtrar: " + poderDisponible.Count);
 
         List<PowerUpData> elegidos = new List<PowerUpData>();
 
@@ -136,6 +203,7 @@ public class NivelManager : MonoBehaviour
         {
             int indice = Random.Range(0, poderDisponible.Count);
             elegidos.Add(poderDisponible[indice]);
+            Debug.Log("[NivelManager] Poder elegido " + i + ": " + poderDisponible[indice].nombre);
             poderDisponible.RemoveAt(indice);
         }
 

@@ -1287,7 +1287,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3efd83c02bc3ff54fa3a7eb7c91c6576, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerUpManager
-  todosLosPoderes: []
+  todosLosPoderes:
+  - {fileID: 11400000, guid: 1b8127ae67a6909489b9175f91db3271, type: 2}
+  - {fileID: 11400000, guid: a489e40fe74cbe448a6799ca76c18b2c, type: 2}
+  - {fileID: 11400000, guid: 3b904b7eb944fda438ac6f42590962e9, type: 2}
+  - {fileID: 11400000, guid: c358efcfa1b52ef41a088d4517d0e87f, type: 2}
+  - {fileID: 11400000, guid: b63e9577f600b2447b651266c62cce03, type: 2}
+  - {fileID: 11400000, guid: 107da8c2a6730594095de3d1e9eb3397, type: 2}
+  - {fileID: 11400000, guid: 768736220e0df104a8dee1443c413e19, type: 2}
+  - {fileID: 11400000, guid: 58742b5270943a1469cefa59a7261ea3, type: 2}
 --- !u!114 &453516459
 MonoBehaviour:
   m_ObjectHideFlags: 0
