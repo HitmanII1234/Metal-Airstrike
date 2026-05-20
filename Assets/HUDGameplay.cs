@@ -15,9 +15,13 @@ public class HUDGameplay : MonoBehaviour
     public Image barraVidaP2;
     public TextMeshProUGUI textoNombreP2;
 
-    [Header("Referencias de Estadísticas (Top-Right)")]
+    [Header("Referencias de Estadísticas (Top-Right) - Jugador 1")]
     public TextMeshProUGUI textoScore;
     public TextMeshProUGUI textoNivel;
+
+    [Header("Referencias de Estadísticas - Jugador 2 (Solo Multijugador)")]
+    public TextMeshProUGUI textoScoreP2;
+    public TextMeshProUGUI textoNivelP2;
 
     private Salud saludP1;
     private Salud saludP2;
@@ -67,15 +71,21 @@ public class HUDGameplay : MonoBehaviour
         // 1. Actualizar Score y Nivel (Top-Right)
         if (GameManager.Instance != null)
         {
+            string scoreTexto = "SCORE: " + GameManager.Instance.score;
+            string nivelTexto = "NIVEL: " + GameManager.Instance.rondaActual;
+
             if (textoScore != null)
-            {
-                textoScore.text = "SCORE: " + GameManager.Instance.score;
-            }
+                textoScore.text = scoreTexto;
 
             if (textoNivel != null)
-            {
-                textoNivel.text = "NIVEL: " + GameManager.Instance.rondaActual;
-            }
+                textoNivel.text = nivelTexto;
+
+            // En multijugador, el P2 comparte el mismo score global
+            if (textoScoreP2 != null)
+                textoScoreP2.text = scoreTexto;
+
+            if (textoNivelP2 != null)
+                textoNivelP2.text = nivelTexto;
         }
 
         // 2. Buscar al Jugador 1 si no ha sido asignado aún

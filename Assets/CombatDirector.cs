@@ -67,6 +67,9 @@ public class CombatDirector : MonoBehaviour
                     // Spawn para Jugador 1
                     GameObject enemigo1 = ObjectPool.Instance.SpawnFromPool(tagEnemigo, spawnPunto.position, Quaternion.identity);
                     ConfigurarSaludEnemigo(enemigo1);
+                    // Asignar layer de P1 si estamos en multijugador
+                    if (esMulti && MultiplayerManager.Instance != null && MultiplayerManager.Instance.layerP1 >= 0)
+                        MultiplayerManager.AsignarLayerRecursivo(enemigo1, MultiplayerManager.Instance.layerP1);
 
                     // Spawn para Jugador 2 (offset en Y de -10, ya que P2 está en y=-5 y P1 en y=5)
                     if (esMulti)
@@ -78,6 +81,8 @@ public class CombatDirector : MonoBehaviour
                             string tagEnemigoP2 = DeterminarEnemigoPorNivel(GameManager.Instance.rondaActual);
                             GameObject enemigo2 = ObjectPool.Instance.SpawnFromPool(tagEnemigoP2, posP2, Quaternion.identity);
                             ConfigurarSaludEnemigo(enemigo2);
+                            if (MultiplayerManager.Instance != null && MultiplayerManager.Instance.layerP2 >= 0)
+                                MultiplayerManager.AsignarLayerRecursivo(enemigo2, MultiplayerManager.Instance.layerP2);
                         }
                     }
                 }

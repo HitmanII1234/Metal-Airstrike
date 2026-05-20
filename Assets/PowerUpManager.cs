@@ -46,10 +46,11 @@ public class PowerUpManager : MonoBehaviour
 
             ControlAvion avion = j.GetComponent<ControlAvion>();
             Salud salud = j.GetComponent<Salud>();
-            
-            // Si el componente tiene numeroJugador, lo comprobamos
+
+            // Determinar a qué jugador pertenece este objeto
+            // Si tiene avion, ese es el identificador principal
+            // Solo saltar si podemos confirmar que NO es el jugador objetivo
             if (avion != null && avion.numeroJugador != targetPlayerNumber) continue;
-            if (salud != null && salud.numeroJugador != targetPlayerNumber) continue;
 
             switch (data.tipo)
             {

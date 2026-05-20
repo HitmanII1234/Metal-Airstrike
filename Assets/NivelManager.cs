@@ -57,8 +57,14 @@ public class NivelManager : MonoBehaviour
 
     private void MostrarPantallaParaJugadorActual()
     {
+        Debug.Log("[NivelManager] Poderes: " + (PowerUpManager.Instance != null ? PowerUpManager.Instance.todosLosPoderes.Count.ToString() : "PowerUpManager NULO"));
+        Debug.Log("[NivelManager] Botones: " + (botonesPoder != null ? botonesPoder.Length.ToString() : "NULL"));
+
         if (panelSeleccionPoder == null || PowerUpManager.Instance == null || PowerUpManager.Instance.todosLosPoderes == null)
+        {
+            Debug.LogError("[NivelManager] Condición inicial falló!");
             return;
+        }
 
         Time.timeScale = 0f;
         panelSeleccionPoder.SetActive(true);
