@@ -30,6 +30,7 @@ public class NivelManager : MonoBehaviour
     public int opcionesPorNivel = 3;
 
     private List<PowerUpData> opcionesActuales = new List<PowerUpData>();
+    private int jugadorElegiendoPoder = 1;
 
     void Awake()
     {
@@ -50,6 +51,12 @@ public class NivelManager : MonoBehaviour
 
     public void MostrarPantallaSeleccion()
     {
+        jugadorElegiendoPoder = 1;
+        MostrarPantallaParaJugadorActual();
+    }
+
+    private void MostrarPantallaParaJugadorActual()
+    {
         if (panelSeleccionPoder == null || PowerUpManager.Instance == null || PowerUpManager.Instance.todosLosPoderes == null)
             return;
 
@@ -60,7 +67,13 @@ public class NivelManager : MonoBehaviour
             textoNivel.text = "Nivel " + (GameManager.Instance.rondaActual + 1);
 
         if (textoTituloSeleccion != null)
-            textoTituloSeleccion.text = "Elige un poder";
+        {
+            bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
+            if (esMulti)
+                textoTituloSeleccion.text = "Elige un poder, Jugador " + jugadorElegiendoPoder;
+            else
+                textoTituloSeleccion.text = "Elige un poder";
+        }
 
         opcionesActuales = ElegirPoderesAleatorios();
 
@@ -130,14 +143,24 @@ public class NivelManager : MonoBehaviour
 
         if (PowerUpManager.Instance != null)
         {
-            PowerUpManager.Instance.ApplyPowerUp(opcionesActuales[indice]);
+            PowerUpManager.Instance.ApplyPowerUp(opcionesActuales[indice], jugadorElegiendoPoder);
         }
 
-        if (panelSeleccionPoder != null)
-            panelSeleccionPoder.SetActive(false);
+        bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
 
-        Time.timeScale = 1f;
-        StartCoroutine(TransicionANuevaRonda());
+        if (esMulti && jugadorElegiendoPoder == 1)
+        {
+            jugadorElegiendoPoder = 2;
+            MostrarPantallaParaJugadorActual();
+        }
+        else
+        {
+            if (panelSeleccionPoder != null)
+                panelSeleccionPoder.SetActive(false);
+
+            Time.timeScale = 1f;
+            StartCoroutine(TransicionANuevaRonda());
+        }
     }
 
     IEnumerator TransicionANuevaRonda()

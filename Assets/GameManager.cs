@@ -3,7 +3,18 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;
+    private static GameManager _instance;
+    public static GameManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<GameManager>();
+            }
+            return _instance;
+        }
+    }
 
     public int vidasPorRonda = 1;
     public int rondaActual = 1;
@@ -20,12 +31,17 @@ public class GameManager : MonoBehaviour
     
     void Awake()
     {
-        if (Instance == null)
+        if (_instance == null)
         {
-            Instance = this;
+            _instance = this;
             DontDestroyOnLoad(gameObject);
+            
+            if (PlayerPrefs.HasKey("Player1Name"))
+                playerName = PlayerPrefs.GetString("Player1Name");
+            if (PlayerPrefs.HasKey("Player2Name"))
+                player2Name = PlayerPrefs.GetString("Player2Name");
         }
-        else
+        else if (_instance != this)
         {
             Destroy(gameObject);
         }

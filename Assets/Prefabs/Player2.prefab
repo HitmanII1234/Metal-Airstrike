@@ -38,8 +38,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 1.2}
-  m_SizeDelta: {x: 4, y: 1.5}
+  m_AnchoredPosition: {x: 0.46, y: 4.24}
+  m_SizeDelta: {x: 83.65, y: 32.852}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &8992151994074757732
 Canvas:
@@ -117,7 +117,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dadd674bfc1b63043ad6b506b93bfe13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BarraBillboard
-  lookAtCamera: 1
+  lookAtCamera: 0
   targetCamera: {fileID: 0}
 --- !u!114 &7682447194521669989
 MonoBehaviour:
@@ -705,8 +705,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 4.7, y: 26.2}
-  m_SizeDelta: {x: 61.57, y: 29.61}
+  m_AnchoredPosition: {x: -0.000012829, y: -2.331}
+  m_SizeDelta: {x: 88.71, y: 28.19}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &9045599977041014610
 CanvasRenderer:
@@ -763,8 +763,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 11
-  m_fontSizeBase: 11
+  m_fontSize: 12
+  m_fontSizeBase: 12
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

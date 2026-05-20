@@ -20,6 +20,7 @@ public class ControlAvion : MonoBehaviour
     public string ejeVertical = "Vertical";
     public string ejeHorizontal = "Horizontal";
     public KeyCode teclaDisparo = KeyCode.Space;
+    public int numeroJugador = 1;
 
     [Header("Inclinación Realista")]
     public float inclinacionMaxima = 20f;
@@ -43,8 +44,39 @@ public class ControlAvion : MonoBehaviour
         if (helice != null)
             helice.Rotate(Vector3.forward * velocidadHelice * Time.deltaTime);
 
-        float entradaVertical = Input.GetAxis(ejeVertical);
-        float entradaHorizontal = Input.GetAxis(ejeHorizontal);
+        float entradaVertical = 0f;
+        float entradaHorizontal = 0f;
+
+        bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
+
+        if (!esMulti)
+        {
+            entradaVertical = Input.GetAxis(ejeVertical);
+            entradaHorizontal = Input.GetAxis(ejeHorizontal);
+        }
+        else
+        {
+            if (numeroJugador == 1)
+            {
+                if (Input.GetKey(KeyCode.W)) entradaVertical = 1f;
+                else if (Input.GetKey(KeyCode.S)) entradaVertical = -1f;
+
+                if (Input.GetKey(KeyCode.D)) entradaHorizontal = 1f;
+                else if (Input.GetKey(KeyCode.A)) entradaHorizontal = -1f;
+
+                teclaDisparo = KeyCode.X;
+            }
+            else if (numeroJugador == 2)
+            {
+                if (Input.GetKey(KeyCode.UpArrow)) entradaVertical = 1f;
+                else if (Input.GetKey(KeyCode.DownArrow)) entradaVertical = -1f;
+
+                if (Input.GetKey(KeyCode.RightArrow)) entradaHorizontal = 1f;
+                else if (Input.GetKey(KeyCode.LeftArrow)) entradaHorizontal = -1f;
+
+                teclaDisparo = KeyCode.Space;
+            }
+        }
 
         if (Mathf.Abs(entradaVertical) > 0.1f)
             yDeseada += entradaVertical * fuerzaEmpuje * Time.deltaTime;

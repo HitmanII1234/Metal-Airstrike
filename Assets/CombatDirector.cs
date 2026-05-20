@@ -41,35 +41,62 @@ public class CombatDirector : MonoBehaviour
 
     IEnumerator RutinaSpawn()
     {
-        float nivelFactor = 1f + incrementoVelocidadPorNivel * (GameManager.Instance.rondaActual - 1);
-        float tiempoEspera = Mathf.Max(0.25f, velocidadSpawn / nivelFactor);
-
         while (!rondaCompletada)
         {
-            if (this == null || GameManager.Instance == null) yield break; // Detener corrutina si el manager se destruyó
+            if (this == null) yield break; // Detener si el objeto se destruye
 
-            if (enemigosVivos < 40) // Límite de enemigos en pantalla al mismo tiempo
+            if (GameManager.Instance == null || ObjectPool.Instance == null)
+            {
+                yield return new WaitForSeconds(0.2f); // Espera breve a que se inicialicen
+                continue;
+            }
+
+            float nivelFactor = 1f + incrementoVelocidadPorNivel * (GameManager.Instance.rondaActual - 1);
+            float tiempoEspera = Mathf.Max(0.25f, velocidadSpawn / nivelFactor);
+
+            bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
+            int maxEnemigos = esMulti ? 80 : 40;
+
+            if (enemigosVivos < maxEnemigos) 
             {
                 string tagEnemigo = DeterminarEnemigoPorNivel(GameManager.Instance.rondaActual);
                 
                 Transform spawnPunto = SeleccionarPuntoSpawnValido();
                 if (spawnPunto != null)
                 {
-                    if (ObjectPool.Instance == null) yield break;
-                    GameObject enemigo = ObjectPool.Instance.SpawnFromPool(tagEnemigo, spawnPunto.position, Quaternion.identity);
-                    if (enemigo != null)
+                    // Spawn para Jugador 1
+                    GameObject enemigo1 = ObjectPool.Instance.SpawnFromPool(tagEnemigo, spawnPunto.position, Quaternion.identity);
+                    ConfigurarSaludEnemigo(enemigo1);
+
+                    // Spawn para Jugador 2 (offset en Y de -10, ya que P2 está en y=-5 y P1 en y=5)
+                    if (esMulti)
                     {
-                        enemigosVivos++;
-                        Salud salud = enemigo.GetComponent<Salud>();
-                        if (salud != null)
+                        Vector3 posP2 = spawnPunto.position + new Vector3(0, -10f, 0);
+                        Collider2D colision = Physics2D.OverlapCircle(posP2, radioComprobacionSpawn, capaEnemigos);
+                        if (colision == null)
                         {
-                            salud.AumentarVidaMaxima(0.1f * GameManager.Instance.rondaActual);
+                            string tagEnemigoP2 = DeterminarEnemigoPorNivel(GameManager.Instance.rondaActual);
+                            GameObject enemigo2 = ObjectPool.Instance.SpawnFromPool(tagEnemigoP2, posP2, Quaternion.identity);
+                            ConfigurarSaludEnemigo(enemigo2);
                         }
                     }
                 }
             }
             
             yield return new WaitForSeconds(Random.Range(tiempoEspera - 0.4f, tiempoEspera + 0.4f));
+        }
+    }
+
+    void ConfigurarSaludEnemigo(GameObject enemigo)
+    {
+        if (enemigo != null)
+        {
+            enemigosVivos++;
+            Salud salud = enemigo.GetComponent<Salud>();
+            if (salud != null)
+            {
+                salud.AumentarVidaMaxima(0.1f * GameManager.Instance.rondaActual);
+            }
         }
     }
 

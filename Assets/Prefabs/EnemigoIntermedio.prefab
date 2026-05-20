@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 4424817359990799721}
   m_Layer: 6
   m_Name: EnemigoIntermedio
-  m_TagString: Undefined
+  m_TagString: EnemigoIntermedio
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

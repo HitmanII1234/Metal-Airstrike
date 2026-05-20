@@ -32,9 +32,16 @@ public class ObjectPool : MonoBehaviour
 
             for (int i = 0; i < pool.size; i++)
             {
-                GameObject obj = Instantiate(pool.prefab);
-                obj.SetActive(false);
-                objectPool.Enqueue(obj);
+                try
+                {
+                    GameObject obj = Instantiate(pool.prefab);
+                    obj.SetActive(false);
+                    objectPool.Enqueue(obj);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError("Error al instanciar el prefab de la pool: " + pool.tag + ". Detalle: " + e.Message);
+                }
             }
 
             poolDictionary.Add(pool.tag, objectPool);

@@ -36,7 +36,7 @@ public class PowerUpManager : MonoBehaviour
         Instance = this;
     }
 
-    public void ApplyPowerUp(PowerUpData data)
+    public void ApplyPowerUp(PowerUpData data, int targetPlayerNumber = 1)
     {
         GameObject[] jugadores = GameObject.FindGameObjectsWithTag("Player");
 
@@ -46,6 +46,10 @@ public class PowerUpManager : MonoBehaviour
 
             ControlAvion avion = j.GetComponent<ControlAvion>();
             Salud salud = j.GetComponent<Salud>();
+            
+            // Si el componente tiene numeroJugador, lo comprobamos
+            if (avion != null && avion.numeroJugador != targetPlayerNumber) continue;
+            if (salud != null && salud.numeroJugador != targetPlayerNumber) continue;
 
             switch (data.tipo)
             {
@@ -73,7 +77,7 @@ public class PowerUpManager : MonoBehaviour
                     }
                     if (autoRegenCoroutine == null)
                     {
-                        autoRegenCoroutine = StartCoroutine(AutoRegenRoutine(jugadores));
+                        autoRegenCoroutine = StartCoroutine(AutoRegenRoutine());
                     }
                     break;
 
@@ -105,7 +109,7 @@ public class PowerUpManager : MonoBehaviour
                     }
                     if (autoRegenCoroutine == null)
                     {
-                        autoRegenCoroutine = StartCoroutine(AutoRegenRoutine(jugadores));
+                        autoRegenCoroutine = StartCoroutine(AutoRegenRoutine());
                     }
                     break;
 
@@ -121,7 +125,7 @@ public class PowerUpManager : MonoBehaviour
         }
     }
 
-    IEnumerator AutoRegenRoutine(GameObject[] jugadores)
+    IEnumerator AutoRegenRoutine()
     {
         int timer = 0;
         while (true)
@@ -129,6 +133,7 @@ public class PowerUpManager : MonoBehaviour
             yield return new WaitForSeconds(1f); // Contamos por segundo
             timer++;
 
+            GameObject[] jugadores = GameObject.FindGameObjectsWithTag("Player");
             foreach (GameObject j in jugadores)
             {
                 if (j != null && j.activeInHierarchy)

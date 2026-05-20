@@ -227,6 +227,9 @@ public class MenuController : MonoBehaviour
             if (nombre1 == "" || nombre2 == "")
                 return;
 
+            PlayerPrefs.SetString("Player1Name", nombre1);
+            PlayerPrefs.SetString("Player2Name", nombre2);
+
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.playerName = nombre1;
@@ -237,6 +240,9 @@ public class MenuController : MonoBehaviour
         {
             if (nombre1 == "")
                 return;
+
+            PlayerPrefs.SetString("Player1Name", nombre1);
+            PlayerPrefs.SetString("Player2Name", "");
 
             if (GameManager.Instance != null)
             {

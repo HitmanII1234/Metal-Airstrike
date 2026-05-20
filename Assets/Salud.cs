@@ -8,6 +8,7 @@ public class Salud : MonoBehaviour, IPooleable
     [Header("Escudos y Regeneración")]
     public float escudoActual = 0f;
     public float escudoMaximo = 0f;
+    public int numeroJugador = 1;
     public float cantidadRegeneracion = 0f;
     public float cantidadRegeneracionEscudo = 0f;
     public float reduccionDanio = 0f;
