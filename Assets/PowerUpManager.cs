@@ -30,25 +30,11 @@ public class PowerUpManager : MonoBehaviour
     {
         get
         {
-            if (_instance == null || _instance.todosLosPoderes == null || _instance.todosLosPoderes.Count == 0)
+            if (_instance == null)
             {
-                PowerUpManager[] managers = FindObjectsOfType<PowerUpManager>();
-                foreach (PowerUpManager m in managers)
-                {
-                    if (m.todosLosPoderes != null && m.todosLosPoderes.Count > 0)
-                    {
-                        _instance = m;
-                        return _instance;
-                    }
-                }
-                if (managers.Length > 0)
-                    _instance = managers[0];
+                _instance = FindObjectOfType<PowerUpManager>();
             }
             return _instance;
-        }
-        set
-        {
-            _instance = value;
         }
     }
 
@@ -57,10 +43,13 @@ public class PowerUpManager : MonoBehaviour
 
     void Awake()
     {
-        // Forzamos que se asigne esta instancia si tiene los poderes
-        if (_instance == null || (todosLosPoderes != null && todosLosPoderes.Count > 0))
+        if (_instance == null)
         {
             _instance = this;
+        }
+        else if (_instance != this)
+        {
+            Destroy(gameObject);
         }
     }
 

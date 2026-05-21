@@ -126,14 +126,22 @@ public class NivelManager : MonoBehaviour
         }
         else
         {
-            MostrarPantallaParaJugador(1);
+            Debug.Log("[NivelManager] Modo 1 jugador - Panel de mejoras desactivado, continuando automáticamente");
+            Time.timeScale = 1f;
+            if (GameManager.Instance != null) GameManager.Instance.SiguienteRonda();
+            if (CombatDirector.Instance != null) CombatDirector.Instance.IniciarRonda();
         }
     }
 
     private void MostrarPantallaParaJugador(int numeroJugador)
     {
         Debug.Log("[NivelManager] Mostrando panel para Jugador " + numeroJugador);
-        Debug.Log("[NivelManager] Poderes: " + (PowerUpManager.Instance != null ? PowerUpManager.Instance.todosLosPoderes.Count.ToString() : "PowerUpManager NULO"));
+        Debug.Log("[NivelManager] PowerUpManager.Instance: " + (PowerUpManager.Instance != null ? "Encontrado" : "NULO"));
+        
+        if (PowerUpManager.Instance != null)
+        {
+            Debug.Log("[NivelManager] todosLosPoderes: " + (PowerUpManager.Instance.todosLosPoderes != null ? PowerUpManager.Instance.todosLosPoderes.Count.ToString() : "NULO"));
+        }
 
         if (PowerUpManager.Instance == null || PowerUpManager.Instance.todosLosPoderes == null || PowerUpManager.Instance.todosLosPoderes.Count == 0)
         {
@@ -173,40 +181,66 @@ public class NivelManager : MonoBehaviour
 
         for (int i = 0; i < botonesActuales.Length; i++)
         {
-            if (botonesActuales[i] == null) continue;
+            Debug.Log("[NivelManager] Procesando botón " + i + " de " + botonesActuales.Length);
+            
+            if (botonesActuales[i] == null) 
+            {
+                Debug.LogError("[NivelManager] Botón " + i + " es NULO!");
+                continue;
+            }
 
             if (i < opcionesJugador.Count)
             {
                 PowerUpData poder = opcionesJugador[i];
                 if (poder == null)
                 {
+                    Debug.Log("[NivelManager] Poder " + i + " es NULO, desactivando botón");
                     botonesActuales[i].gameObject.SetActive(false);
                     continue;
                 }
 
                 Debug.Log("[NivelManager] J" + numeroJugador + " - Botón " + i + ": " + poder.nombre);
+                Debug.Log("[NivelManager] J" + numeroJugador + " - Icono: " + (poder.icono != null ? poder.icono.name : "NULO"));
+                Debug.Log("[NivelManager] J" + numeroJugador + " - Descripción: " + poder.descripcion);
 
                 if (iconosActuales != null && i < iconosActuales.Length && iconosActuales[i] != null)
                 {
+                    Debug.Log("[NivelManager] Asignando icono a botón " + i);
                     iconosActuales[i].sprite = poder.icono;
                     iconosActuales[i].enabled = true;
+                    iconosActuales[i].gameObject.SetActive(true);
+                }
+                else
+                {
+                    Debug.LogError("[NivelManager] Icono " + i + " no disponible! iconosActuales=" + (iconosActuales != null ? "OK" : "NULO") + ", Length=" + (iconosActuales != null ? iconosActuales.Length.ToString() : "0"));
                 }
 
                 if (nombresActuales != null && i < nombresActuales.Length && nombresActuales[i] != null)
                 {
+                    Debug.Log("[NivelManager] Asignando nombre a botón " + i);
                     nombresActuales[i].text = poder.nombre;
                     nombresActuales[i].enabled = true;
                     nombresActuales[i].gameObject.SetActive(true);
                 }
+                else
+                {
+                    Debug.LogError("[NivelManager] Nombre " + i + " no disponible!");
+                }
 
                 if (descripcionesActuales != null && i < descripcionesActuales.Length && descripcionesActuales[i] != null)
                 {
+                    Debug.Log("[NivelManager] Asignando descripción a botón " + i);
                     descripcionesActuales[i].text = poder.descripcion;
                     descripcionesActuales[i].enabled = true;
                     descripcionesActuales[i].gameObject.SetActive(true);
                 }
+                else
+                {
+                    Debug.LogError("[NivelManager] Descripción " + i + " no disponible!");
+                }
 
                 Button boton = botonesActuales[i];
+                Debug.Log("[NivelManager] Activando botón " + i);
                 boton.gameObject.SetActive(true);
                 boton.onClick.RemoveAllListeners();
                 int opcionIndex = i;
@@ -215,6 +249,7 @@ public class NivelManager : MonoBehaviour
             }
             else
             {
+                Debug.Log("[NivelManager] Desactivando botón " + i + " (sin poder asignado)");
                 botonesActuales[i].gameObject.SetActive(false);
             }
         }

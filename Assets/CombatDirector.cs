@@ -126,6 +126,8 @@ public class CombatDirector : MonoBehaviour
                         posicionSpawn.y = Mathf.Clamp(posicionSpawn.y, -4f, 4f);
                         GameObject enemigo = ObjectPool.Instance.SpawnFromPool(tagEnemigo, posicionSpawn, Quaternion.identity);
                         ConfigurarSaludEnemigo(enemigo, GameManager.Instance.rondaActual);
+
+                        yield return new WaitForSeconds(Random.Range(tiempoEspera - 0.3f, tiempoEspera + 0.3f));
                     }
                 }
             }
@@ -188,15 +190,8 @@ public class CombatDirector : MonoBehaviour
         }
         else
         {
-            if (NivelManager.Instance != null)
-            {
-                NivelManager.Instance.MostrarPantallaSeleccion();
-            }
-            else
-            {
-                GameManager.Instance.SiguienteRonda();
-                IniciarRonda();
-            }
+            GameManager.Instance.SiguienteRonda();
+            IniciarRonda();
         }
     }
 
