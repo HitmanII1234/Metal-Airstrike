@@ -575,7 +575,7 @@ GameObject:
   - component: {fileID: 357417887}
   - component: {fileID: 357417886}
   m_Layer: 5
-  m_Name: 'TextoNivel '
+  m_Name: TextoNivel2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1000,7 +1000,7 @@ GameObject:
   - component: {fileID: 406618470}
   - component: {fileID: 406618471}
   m_Layer: 5
-  m_Name: TextoScore
+  m_Name: TextoScore1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1359,8 +1359,14 @@ MonoBehaviour:
   rondaActual: 1
   score: 0
   jugadoresVivos: 1
-  scoreRequeridoActual: 1000
+  scoreJugador1: 0
+  scoreJugador2: 0
+  rondaJugador1: 1
+  rondaJugador2: 1
+  scoreObjetivoJ1: 1000
+  scoreObjetivoJ2: 1000
   multiplicadorScore: 1.15
+  scoreRequeridoActual: 1000
   scoreObjetivoTotal: 1000
   playerName: Player
   player2Name: Player2
@@ -1546,29 +1552,39 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NivelManager
   panelSeleccionPoder: {fileID: 1666705736}
+  panelSeleccionPoderP2: {fileID: 0}
   textoNivel: {fileID: 0}
+  textoNivelP2: {fileID: 0}
   textoTituloSeleccion: {fileID: 0}
+  textoTituloSeleccionP2: {fileID: 0}
   iconosPoder:
   - {fileID: 747543990}
   - {fileID: 389122790}
   - {fileID: 1645965005}
+  iconosPoderP2: []
   nombresPoder:
   - {fileID: 378183184}
   - {fileID: 925920861}
   - {fileID: 1128750291}
+  nombresPoderP2: []
   descripcionesPoder:
   - {fileID: 586972862}
   - {fileID: 1323827845}
   - {fileID: 2140455581}
+  descripcionesPoderP2: []
   botonesPoder:
   - {fileID: 996978864}
   - {fileID: 938694408}
   - {fileID: 778421465}
+  botonesPoderP2: []
   pantallaCarga: {fileID: 395619187}
   textoCarga: {fileID: 1004475335}
   duracionPantallaCarga: 2
   panelGameOver: {fileID: 242621826}
   textoScoreFinal: {fileID: 478409182}
+  panelAvisoNivel: {fileID: 0}
+  textoAvisoNivel: {fileID: 0}
+  duracionAvisoNivel: 2
   opcionesPorNivel: 3
 --- !u!4 &478755120
 Transform:
@@ -3089,7 +3105,7 @@ GameObject:
   - component: {fileID: 967707395}
   - component: {fileID: 967707394}
   m_Layer: 5
-  m_Name: TextoNivel
+  m_Name: TextoNivel1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4845,7 +4861,7 @@ GameObject:
   - component: {fileID: 1595190796}
   - component: {fileID: 1595190797}
   m_Layer: 5
-  m_Name: TextoScore
+  m_Name: TextoScore2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

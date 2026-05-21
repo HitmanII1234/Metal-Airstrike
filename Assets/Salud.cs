@@ -103,17 +103,27 @@ public class Salud : MonoBehaviour, IPooleable
 
     void Morir()
     {
-        string miTag = gameObject.tag.Trim(); // Limpiar espacios invisibles
+        string miTag = gameObject.tag.Trim();
         
         if (miTag.Contains("Enemigo"))
         {
             if (GameManager.Instance != null)
             {
-                int puntos = 100; // Por defecto
+                int puntos = 100;
                 if (miTag.Contains("Intermedio")) puntos = 150;
                 else if (miTag.Contains("Avanzado")) puntos = 200;
 
-                GameManager.Instance.AddScore(puntos);
+                bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
+                
+                if (esMulti)
+                {
+                    int jugadorQueMato = (transform.position.y > 0) ? 1 : 2;
+                    GameManager.Instance.AddScore(puntos, jugadorQueMato);
+                }
+                else
+                {
+                    GameManager.Instance.AddScore(puntos);
+                }
                 
                 if (CombatDirector.Instance != null) 
                 {

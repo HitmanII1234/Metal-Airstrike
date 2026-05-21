@@ -33,6 +33,11 @@ public class NivelManager : MonoBehaviour
     public GameObject panelGameOver;
     public TextMeshProUGUI textoScoreFinal;
 
+    [Header("Aviso de Subida de Nivel")]
+    public GameObject panelAvisoNivel;
+    public TextMeshProUGUI textoAvisoNivel;
+    public float duracionAvisoNivel = 2f;
+
     [Header("Configuración")]
     public int opcionesPorNivel = 3;
 
@@ -57,6 +62,56 @@ public class NivelManager : MonoBehaviour
 
         if (panelGameOver != null)
             panelGameOver.SetActive(false);
+
+        if (panelAvisoNivel == null)
+        {
+            CrearPanelAvisoNivelAutomatico();
+        }
+        else
+        {
+            panelAvisoNivel.SetActive(false);
+        }
+    }
+
+    void CrearPanelAvisoNivelAutomatico()
+    {
+        GameObject canvas = FindObjectOfType<Canvas>()?.gameObject;
+        if (canvas == null)
+        {
+            Debug.LogError("[NivelManager] No se encontró Canvas para crear el aviso de nivel");
+            return;
+        }
+
+        panelAvisoNivel = new GameObject("PanelAvisoNivel");
+        panelAvisoNivel.transform.SetParent(canvas.transform, false);
+
+        RectTransform rect = panelAvisoNivel.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = new Vector2(600, 100);
+        rect.anchoredPosition = Vector2.zero;
+
+        Image bg = panelAvisoNivel.AddComponent<Image>();
+        bg.color = new Color(0, 0, 0, 0.7f);
+
+        GameObject txtObj = new GameObject("TextoAviso");
+        txtObj.transform.SetParent(panelAvisoNivel.transform, false);
+
+        RectTransform txtRect = txtObj.AddComponent<RectTransform>();
+        txtRect.anchorMin = Vector2.zero;
+        txtRect.anchorMax = Vector2.one;
+        txtRect.sizeDelta = Vector2.zero;
+
+        textoAvisoNivel = txtObj.AddComponent<TextMeshProUGUI>();
+        textoAvisoNivel.alignment = TextAlignmentOptions.Center;
+        textoAvisoNivel.fontSize = 36;
+        textoAvisoNivel.color = Color.yellow;
+        textoAvisoNivel.fontStyle = FontStyles.Bold;
+        textoAvisoNivel.text = "";
+
+        panelAvisoNivel.SetActive(false);
+        Debug.Log("[NivelManager] Panel de aviso de nivel creado automáticamente");
     }
 
     public void MostrarPantallaSeleccion()
@@ -270,6 +325,24 @@ public class NivelManager : MonoBehaviour
         {
             textoScoreFinal.text = "SCORE FINAL:\n" + scoreFinal;
         }
+    }
+
+    public void MostrarAvisoSubidaNivel(int numeroJugador, int nuevoNivel)
+    {
+        if (panelAvisoNivel == null || textoAvisoNivel == null) return;
+
+        StopAllCoroutines();
+        StartCoroutine(RutinaAvisoNivel(numeroJugador, nuevoNivel));
+    }
+
+    IEnumerator RutinaAvisoNivel(int numeroJugador, int nuevoNivel)
+    {
+        textoAvisoNivel.text = "¡JUGADOR " + numeroJugador + " SUBIÓ A NIVEL " + nuevoNivel + "!";
+        panelAvisoNivel.SetActive(true);
+
+        yield return new WaitForSecondsRealtime(duracionAvisoNivel);
+
+        panelAvisoNivel.SetActive(false);
     }
 
     public void BotonReintentar()

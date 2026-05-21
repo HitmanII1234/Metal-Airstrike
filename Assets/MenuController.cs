@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -26,6 +27,12 @@ public class MenuController : MonoBehaviour
     public GameObject panelGameOver;
     public TextMeshProUGUI textoScoreFinal;
 
+    [Header("UI Scores")]
+    public GameObject panelScores;
+    public Transform contenedorListaScores;
+    public GameObject prefabEntradaScore;
+    public TextMeshProUGUI textoListaVacia;
+
     private bool esMultijugador = false;
     private float masterVolume = 1f;
     private float musicVolume = 1f;
@@ -40,7 +47,6 @@ public class MenuController : MonoBehaviour
         if (MusicManager.Instance != null)
             MusicManager.Instance.PlayMenuMusic();
 
-        // Conectar los listeners de los sliders
         if (sliderMaster != null)
             sliderMaster.onValueChanged.AddListener(SetMasterVolume);
 
@@ -49,6 +55,9 @@ public class MenuController : MonoBehaviour
 
         if (sliderSFX != null)
             sliderSFX.onValueChanged.AddListener(SetSFXVolume);
+
+        if (panelScores != null)
+            panelScores.SetActive(false);
     }
 
     private void OnDestroy()
@@ -277,6 +286,76 @@ public class MenuController : MonoBehaviour
     {
         Time.timeScale = 1f;
         if (GameManager.Instance != null) GameManager.Instance.ResetearEstadisticas();
-        SceneManager.LoadScene("MenuPrincipal"); // Asegúrate de que esta escena se llame así
+        SceneManager.LoadScene("MenuPrincipal");
+    }
+
+    public void AbrirPanelScores()
+    {
+        if (panelScores != null)
+        {
+            panelScores.SetActive(true);
+            PoblarListaScores();
+        }
+    }
+
+    public void CerrarPanelScores()
+    {
+        if (panelScores != null)
+            panelScores.SetActive(false);
+    }
+
+    void PoblarListaScores()
+    {
+        if (contenedorListaScores == null) return;
+
+        foreach (Transform child in contenedorListaScores)
+        {
+            Destroy(child.gameObject);
+        }
+
+        if (ScoreManager.Instance == null) return;
+
+        List<ScoreEntry> scores = ScoreManager.Instance.ObtenerTodosLosScores();
+
+        if (scores.Count == 0)
+        {
+            if (textoListaVacia != null)
+                textoListaVacia.gameObject.SetActive(true);
+            return;
+        }
+
+        if (textoListaVacia != null)
+            textoListaVacia.gameObject.SetActive(false);
+
+        for (int i = 0; i < scores.Count; i++)
+        {
+            ScoreEntry entry = scores[i];
+
+            GameObject entradaObj;
+            if (prefabEntradaScore != null)
+            {
+                entradaObj = Instantiate(prefabEntradaScore, contenedorListaScores);
+            }
+            else
+            {
+                entradaObj = new GameObject("EntradaScore");
+                entradaObj.transform.SetParent(contenedorListaScores, false);
+
+                RectTransform rect = entradaObj.AddComponent<RectTransform>();
+                rect.sizeDelta = new Vector2(0, 50);
+
+                TextMeshProUGUI txt = entradaObj.AddComponent<TextMeshProUGUI>();
+                txt.alignment = TextAlignmentOptions.Left;
+                txt.fontSize = 20;
+                txt.color = Color.white;
+                txt.text = entry.GetDisplayText();
+            }
+
+            TextMeshProUGUI textoEntrada = entradaObj.GetComponent<TextMeshProUGUI>();
+            if (textoEntrada != null)
+            {
+                textoEntrada.text = (i + 1) + ". " + entry.GetDisplayText();
+            }
+        }
     }
 }

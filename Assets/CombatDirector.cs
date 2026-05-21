@@ -19,8 +19,18 @@ public class CombatDirector : MonoBehaviour
     public float incrementoDisparoPorNivel = 0.08f;
 
     private int enemigosVivos;
+    private int enemigosVivosP1;
+    private int enemigosVivosP2;
     private float velocidadSpawn = 2f;
     private bool rondaCompletada = false;
+
+    public void SubirNivelJugador(int numeroJugador)
+    {
+        bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
+        if (!esMulti) return;
+
+        Debug.Log("[CombatDirector] Jugador " + numeroJugador + " subió de nivel!");
+    }
 
     void Awake()
     {
@@ -43,60 +53,88 @@ public class CombatDirector : MonoBehaviour
     {
         while (!rondaCompletada)
         {
-            if (this == null) yield break; // Detener si el objeto se destruye
+            if (this == null) yield break;
 
             if (GameManager.Instance == null || ObjectPool.Instance == null)
             {
-                yield return new WaitForSeconds(0.2f); // Espera breve a que se inicialicen
+                yield return new WaitForSeconds(0.2f);
                 continue;
             }
-
-            float nivelFactor = 1f + incrementoVelocidadPorNivel * (GameManager.Instance.rondaActual - 1);
-            float tiempoEspera = Mathf.Max(0.25f, velocidadSpawn / nivelFactor);
 
             bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
             int maxEnemigos = esMulti ? 80 : 40;
 
             if (enemigosVivos < maxEnemigos) 
             {
-                string tagEnemigo = DeterminarEnemigoPorNivel(GameManager.Instance.rondaActual);
-                
                 Transform spawnPunto = SeleccionarPuntoSpawnValido();
                 if (spawnPunto != null)
                 {
-                    // Spawn para Jugador 1 - posición aleatoria en su mundo (Y entre 1 y 9)
-                    Vector3 posP1 = spawnPunto.position;
-                    posP1.y = Random.Range(1f, 9f);
-                    
-                    GameObject enemigo1 = ObjectPool.Instance.SpawnFromPool(tagEnemigo, posP1, Quaternion.identity);
-                    ConfigurarSaludEnemigo(enemigo1);
-                    if (esMulti && MultiplayerManager.Instance != null && MultiplayerManager.Instance.layerP1 >= 0)
-                        MultiplayerManager.AsignarLayerRecursivo(enemigo1, MultiplayerManager.Instance.layerP1);
-
-                    // Spawn para Jugador 2 - posición aleatoria en su mundo (Y entre -9 y -1)
                     if (esMulti)
                     {
+                        int nivelP1 = GameManager.Instance.rondaJugador1;
+                        int nivelP2 = GameManager.Instance.rondaJugador2;
+
+                        float nivelFactorP1 = 1f + incrementoVelocidadPorNivel * (nivelP1 - 1);
+                        float tiempoEsperaP1 = Mathf.Max(0.25f, velocidadSpawn / nivelFactorP1);
+
+                        Vector3 posP1 = spawnPunto.position;
+                        posP1.y = Random.Range(1f, 9f);
+                        
+                        string tagEnemigoP1 = DeterminarEnemigoPorNivel(nivelP1);
+                        GameObject enemigo1 = ObjectPool.Instance.SpawnFromPool(tagEnemigoP1, posP1, Quaternion.identity);
+                        ConfigurarSaludEnemigo(enemigo1, nivelP1);
+                        if (MultiplayerManager.Instance != null && MultiplayerManager.Instance.layerP1 >= 0)
+                            MultiplayerManager.AsignarLayerRecursivo(enemigo1, MultiplayerManager.Instance.layerP1);
+                        IAEnemigo ia1 = enemigo1.GetComponent<IAEnemigo>();
+                        if (ia1 != null)
+                        {
+                            ia1.yMinZona = 0.5f;
+                            ia1.yMaxZona = 9.5f;
+                            ia1.nivelJugadorAsignado = 1;
+                        }
+
                         Vector3 posP2 = spawnPunto.position;
                         posP2.y = Random.Range(-9f, -1f);
                         
                         Collider2D colision = Physics2D.OverlapCircle(posP2, radioComprobacionSpawn, capaEnemigos);
                         if (colision == null)
                         {
-                            string tagEnemigoP2 = DeterminarEnemigoPorNivel(GameManager.Instance.rondaActual);
+                            string tagEnemigoP2 = DeterminarEnemigoPorNivel(nivelP2);
                             GameObject enemigo2 = ObjectPool.Instance.SpawnFromPool(tagEnemigoP2, posP2, Quaternion.identity);
-                            ConfigurarSaludEnemigo(enemigo2);
+                            ConfigurarSaludEnemigo(enemigo2, nivelP2);
                             if (MultiplayerManager.Instance != null && MultiplayerManager.Instance.layerP2 >= 0)
                                 MultiplayerManager.AsignarLayerRecursivo(enemigo2, MultiplayerManager.Instance.layerP2);
+                            IAEnemigo ia2 = enemigo2.GetComponent<IAEnemigo>();
+                            if (ia2 != null)
+                            {
+                                ia2.yMinZona = -9.5f;
+                                ia2.yMaxZona = -0.5f;
+                                ia2.nivelJugadorAsignado = 2;
+                            }
                         }
+
+                        yield return new WaitForSeconds(Random.Range(tiempoEsperaP1 - 0.4f, tiempoEsperaP1 + 0.4f));
+                    }
+                    else
+                    {
+                        float nivelFactor = 1f + incrementoVelocidadPorNivel * (GameManager.Instance.rondaActual - 1);
+                        float tiempoEspera = Mathf.Max(0.25f, velocidadSpawn / nivelFactor);
+
+                        string tagEnemigo = DeterminarEnemigoPorNivel(GameManager.Instance.rondaActual);
+                        
+                        Vector3 posicionSpawn = spawnPunto.position;
+                        posicionSpawn.y = Mathf.Clamp(posicionSpawn.y, -4f, 4f);
+                        GameObject enemigo = ObjectPool.Instance.SpawnFromPool(tagEnemigo, posicionSpawn, Quaternion.identity);
+                        ConfigurarSaludEnemigo(enemigo, GameManager.Instance.rondaActual);
                     }
                 }
             }
             
-            yield return new WaitForSeconds(Random.Range(tiempoEspera - 0.4f, tiempoEspera + 0.4f));
+            yield return null;
         }
     }
 
-    void ConfigurarSaludEnemigo(GameObject enemigo)
+    void ConfigurarSaludEnemigo(GameObject enemigo, int nivel)
     {
         if (enemigo != null)
         {
@@ -104,7 +142,7 @@ public class CombatDirector : MonoBehaviour
             Salud salud = enemigo.GetComponent<Salud>();
             if (salud != null)
             {
-                salud.AumentarVidaMaxima(0.1f * GameManager.Instance.rondaActual);
+                salud.AumentarVidaMaxima(0.1f * nivel);
             }
         }
     }
@@ -136,19 +174,29 @@ public class CombatDirector : MonoBehaviour
 
     public void TerminarRondaPorScore()
     {
-        if (rondaCompletada) return; // Evitar que se llame múltiples veces
+        if (rondaCompletada) return;
         rondaCompletada = true;
 
         LimpiarEnemigos();
 
-        if (NivelManager.Instance != null)
-        {
-            NivelManager.Instance.MostrarPantallaSeleccion();
-        }
-        else
+        bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
+
+        if (esMulti)
         {
             GameManager.Instance.SiguienteRonda();
             IniciarRonda();
+        }
+        else
+        {
+            if (NivelManager.Instance != null)
+            {
+                NivelManager.Instance.MostrarPantallaSeleccion();
+            }
+            else
+            {
+                GameManager.Instance.SiguienteRonda();
+                IniciarRonda();
+            }
         }
     }
 

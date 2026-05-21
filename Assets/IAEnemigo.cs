@@ -25,14 +25,48 @@ public class IAEnemigo : MonoBehaviour, IPooleable
     private Transform jugador;
     public float distanciaReaccion = 5f;
 
+    public int nivelJugadorAsignado = 0;
+    private int yMinZonaInterno = -10;
+    private int yMaxZonaInterno = 10;
+
+    public float yMinZona
+    {
+        get { return yMinZonaInterno; }
+        set { yMinZonaInterno = (int)value; }
+    }
+
+    public float yMaxZona
+    {
+        get { return yMaxZonaInterno; }
+        set { yMaxZonaInterno = (int)value; }
+    }
+
     public void OnObjectSpawn()
     {
         yInicial = transform.position.y;
         tiempoAparicion = Time.time;
         cronometro = Random.Range(0f, tiempoEntreDisparos);
         
-        GameObject pObj = GameObject.FindGameObjectWithTag("Player");
-        if (pObj != null) jugador = pObj.transform;
+        bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
+        
+        if (esMulti)
+        {
+            if (transform.position.y > 0)
+            {
+                GameObject pObj = GameObject.Find("Player1(Clone)") ?? GameObject.Find("Player1");
+                if (pObj != null) jugador = pObj.transform;
+            }
+            else
+            {
+                GameObject pObj = GameObject.Find("Player2(Clone)") ?? GameObject.Find("Player2");
+                if (pObj != null) jugador = pObj.transform;
+            }
+        }
+        else
+        {
+            GameObject pObj = GameObject.FindGameObjectWithTag("Player");
+            if (pObj != null) jugador = pObj.transform;
+        }
     }
 
     void Update()
@@ -44,7 +78,14 @@ public class IAEnemigo : MonoBehaviour, IPooleable
         }
 
         float nivelFactor = 1f;
-        if (GameManager.Instance != null)
+        bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
+
+        if (esMulti && nivelJugadorAsignado > 0 && GameManager.Instance != null)
+        {
+            int nivelUsar = (nivelJugadorAsignado == 1) ? GameManager.Instance.rondaJugador1 : GameManager.Instance.rondaJugador2;
+            nivelFactor += 0.05f * (nivelUsar - 1);
+        }
+        else if (GameManager.Instance != null)
         {
             nivelFactor += 0.05f * (GameManager.Instance.rondaActual - 1);
         }
@@ -70,14 +111,20 @@ public class IAEnemigo : MonoBehaviour, IPooleable
         cronometro += Time.deltaTime;
 
         float delayActual = tiempoEntreDisparos;
-        if (GameManager.Instance != null)
+        
+        if (esMulti && nivelJugadorAsignado > 0 && GameManager.Instance != null)
+        {
+            int nivelUsar = (nivelJugadorAsignado == 1) ? GameManager.Instance.rondaJugador1 : GameManager.Instance.rondaJugador2;
+            delayActual /= 1f + 0.1f * (nivelUsar - 1);
+        }
+        else if (GameManager.Instance != null)
         {
             delayActual /= 1f + 0.1f * (GameManager.Instance.rondaActual - 1);
         }
 
         if (jugador != null && Vector2.Distance(transform.position, jugador.position) < distanciaReaccion)
         {
-            delayActual /= 2f; // Ráfagas
+            delayActual /= 2f;
         }
 
         if (cronometro >= delayActual)
@@ -101,9 +148,15 @@ public class IAEnemigo : MonoBehaviour, IPooleable
                 {
                     scriptBala.balaEnemiga = true; 
                     
-                    // Escalar el daño del enemigo según la ronda actual (ej: +20% por ronda)
                     float dañoBase = 15f;
-                    if (GameManager.Instance != null)
+                    bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
+                    
+                    if (esMulti && nivelJugadorAsignado > 0 && GameManager.Instance != null)
+                    {
+                        int nivelUsar = (nivelJugadorAsignado == 1) ? GameManager.Instance.rondaJugador1 : GameManager.Instance.rondaJugador2;
+                        scriptBala.danio = dañoBase * (1f + (0.2f * (nivelUsar - 1)));
+                    }
+                    else if (GameManager.Instance != null)
                     {
                         scriptBala.danio = dañoBase * (1f + (0.2f * (GameManager.Instance.rondaActual - 1)));
                     }
