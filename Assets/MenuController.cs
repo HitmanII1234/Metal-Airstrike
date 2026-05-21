@@ -308,9 +308,33 @@ public class MenuController : MonoBehaviour
     {
         if (contenedorListaScores == null) return;
 
+        // Mantener layout vertical para la lista de entradas
+        var hLayout = contenedorListaScores.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>();
+        if (hLayout != null) UnityEngine.Object.DestroyImmediate(hLayout);
+        
+        var vLayout = contenedorListaScores.GetComponent<UnityEngine.UI.VerticalLayoutGroup>();
+        if (vLayout == null)
+        {
+            vLayout = contenedorListaScores.gameObject.AddComponent<UnityEngine.UI.VerticalLayoutGroup>();
+        }
+        vLayout.padding = new RectOffset(10, 10, 10, 10);
+        vLayout.spacing = 5;
+        vLayout.childControlWidth = true;
+        vLayout.childForceExpandWidth = true;
+        vLayout.childControlHeight = false;
+        vLayout.childForceExpandHeight = false;
+
+        // Configurar ScrollRect para scroll vertical
+        var scrollRect = contenedorListaScores.GetComponentInParent<UnityEngine.UI.ScrollRect>();
+        if (scrollRect != null)
+        {
+            scrollRect.horizontal = false;
+            scrollRect.vertical = true;
+        }
+
         foreach (Transform child in contenedorListaScores)
         {
-            Destroy(child.gameObject);
+            UnityEngine.Object.Destroy(child.gameObject);
         }
 
         if (ScoreManager.Instance == null) return;
@@ -330,8 +354,8 @@ public class MenuController : MonoBehaviour
         for (int i = 0; i < scores.Count; i++)
         {
             ScoreEntry entry = scores[i];
-
             GameObject entradaObj;
+
             if (prefabEntradaScore != null)
             {
                 entradaObj = Instantiate(prefabEntradaScore, contenedorListaScores);
@@ -342,20 +366,49 @@ public class MenuController : MonoBehaviour
                 entradaObj.transform.SetParent(contenedorListaScores, false);
 
                 RectTransform rect = entradaObj.AddComponent<RectTransform>();
-                rect.sizeDelta = new Vector2(0, 50);
+                rect.anchorMin = new Vector2(0, 1);
+                rect.anchorMax = new Vector2(0, 1);
+                rect.pivot = new Vector2(0, 1);
+                rect.sizeDelta = new Vector2(650, 60);
 
-                TextMeshProUGUI txt = entradaObj.AddComponent<TextMeshProUGUI>();
-                txt.alignment = TextAlignmentOptions.Left;
-                txt.fontSize = 20;
-                txt.color = Color.white;
-                txt.text = entry.GetDisplayText();
-            }
+                var entryLayout = entradaObj.AddComponent<UnityEngine.UI.HorizontalLayoutGroup>();
+                entryLayout.padding = new RectOffset(10, 10, 5, 5);
+                entryLayout.spacing = 15;
+                entryLayout.childControlWidth = false;
+                entryLayout.childForceExpandWidth = false;
+                entryLayout.childControlHeight = true;
+                entryLayout.childForceExpandHeight = false;
+                entryLayout.childAlignment = TextAnchor.MiddleLeft;
 
-            TextMeshProUGUI textoEntrada = entradaObj.GetComponent<TextMeshProUGUI>();
-            if (textoEntrada != null)
-            {
-                textoEntrada.text = (i + 1) + ". " + entry.GetDisplayText();
+                // Posición
+                CreateTextChild(entradaObj, (i + 1) + ".", 80, 24, Color.yellow);
+                // Nombre
+                string nombreDisplay = entry.esMultijugador 
+                    ? entry.nombre + " & " + entry.nombre2 
+                    : entry.nombre;
+                CreateTextChild(entradaObj, nombreDisplay, 150, 24, Color.white);
+                // Nivel
+                CreateTextChild(entradaObj, "Nivel " + entry.nivel, 80, 24, Color.cyan);
+                // Score
+                CreateTextChild(entradaObj, "Score: " + entry.score, 100, 24, Color.green);
+                // Fecha
+                CreateTextChild(entradaObj, entry.fecha, 80, 20, Color.gray);
             }
         }
+    }
+
+    void CreateTextChild(GameObject parent, string text, int width, int fontSize, Color color)
+    {
+        GameObject child = new GameObject("Text_" + text);
+        child.transform.SetParent(parent.transform, false);
+
+        RectTransform rect = child.AddComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(width, 40);
+
+        TextMeshProUGUI txt = child.AddComponent<TextMeshProUGUI>();
+        txt.text = text;
+        txt.alignment = TextAlignmentOptions.Left;
+        txt.fontSize = fontSize;
+        txt.color = color;
     }
 }
