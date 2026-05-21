@@ -33,9 +33,22 @@ public class MultiplayerManager : MonoBehaviour
 
         if (esMulti)
         {
+            float orthoSizeOriginal = cameraP1.orthographicSize;
+            
+            // Configurar cámaras para pantalla dividida
+            // Cada cámara mantiene su orthographicSize completo pero muestra solo su mitad
             cameraP1.rect = new Rect(0, 0.5f, 1, 0.5f);
             cameraP2.gameObject.SetActive(true);
             cameraP2.rect = new Rect(0, 0, 1, 0.5f);
+            
+            // Mover las cámaras para que cada una muestre su propio mundo
+            // P1: cámara centrada en Y=5 (ve de Y=0 a Y=10)
+            Vector3 camPos1 = cameraP1.transform.position;
+            cameraP1.transform.position = new Vector3(camPos1.x, 5f, camPos1.z);
+            
+            // P2: cámara centrada en Y=-5 (ve de Y=-10 a Y=0)
+            Vector3 camPos2 = cameraP2.transform.position;
+            cameraP2.transform.position = new Vector3(camPos2.x, -5f, camPos2.z);
 
             // Excluir el mundo contrario en cada cámara
             if (layerP1 >= 0 && layerP2 >= 0)
@@ -44,15 +57,29 @@ public class MultiplayerManager : MonoBehaviour
                 cameraP2.cullingMask &= ~(1 << layerP1);
             }
 
-            GameObject p1 = Instantiate(player1Prefab, new Vector3(-5, 5, 0), Quaternion.identity);
-            GameObject p2 = Instantiate(player2Prefab, new Vector3(-5, -5, 0), Quaternion.identity);
+            // Posicionar jugadores en el centro de su propio mundo
+            // P1: centrado en Y=5 (su mundo va de Y=0 a Y=10)
+            // P2: centrado en Y=-5 (su mundo va de Y=-10 a Y=0)
+            GameObject p1 = Instantiate(player1Prefab, new Vector3(-5, 5f, 0), Quaternion.identity);
+            GameObject p2 = Instantiate(player2Prefab, new Vector3(-5, -5f, 0), Quaternion.identity);
 
-            // Asignar número de jugador
+            // Asignar número de jugador y límites de movimiento
+            // Cada jugador se mueve libremente en su propio mundo de 10 unidades de alto
             ControlAvion ctrl1 = p1.GetComponent<ControlAvion>();
-            if (ctrl1 != null) ctrl1.numeroJugador = 1;
+            if (ctrl1 != null)
+            {
+                ctrl1.numeroJugador = 1;
+                ctrl1.minYMultiplayer = 0f;
+                ctrl1.maxYMultiplayer = 10f;
+            }
 
             ControlAvion ctrl2 = p2.GetComponent<ControlAvion>();
-            if (ctrl2 != null) ctrl2.numeroJugador = 2;
+            if (ctrl2 != null)
+            {
+                ctrl2.numeroJugador = 2;
+                ctrl2.minYMultiplayer = -10f;
+                ctrl2.maxYMultiplayer = 0f;
+            }
 
             Salud salud1 = p1.GetComponent<Salud>();
             if (salud1 != null) salud1.numeroJugador = 1;

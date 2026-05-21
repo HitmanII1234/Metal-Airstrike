@@ -10,12 +10,19 @@ public class NivelManager : MonoBehaviour
 
     [Header("UI de selección de poderes")]
     public GameObject panelSeleccionPoder;
+    public GameObject panelSeleccionPoderP2;
     public TextMeshProUGUI textoNivel;
+    public TextMeshProUGUI textoNivelP2;
     public TextMeshProUGUI textoTituloSeleccion;
+    public TextMeshProUGUI textoTituloSeleccionP2;
     public Image[] iconosPoder;
+    public Image[] iconosPoderP2;
     public TextMeshProUGUI[] nombresPoder;
+    public TextMeshProUGUI[] nombresPoderP2;
     public TextMeshProUGUI[] descripcionesPoder;
+    public TextMeshProUGUI[] descripcionesPoderP2;
     public Button[] botonesPoder;
+    public Button[] botonesPoderP2;
 
     [Header("Pantalla de carga")]
     public GameObject pantallaCarga;
@@ -42,6 +49,9 @@ public class NivelManager : MonoBehaviour
         if (panelSeleccionPoder != null)
             panelSeleccionPoder.SetActive(false);
 
+        if (panelSeleccionPoderP2 != null)
+            panelSeleccionPoderP2.SetActive(false);
+
         if (pantallaCarga != null)
             pantallaCarga.SetActive(false);
 
@@ -52,150 +62,135 @@ public class NivelManager : MonoBehaviour
     public void MostrarPantallaSeleccion()
     {
         jugadorElegiendoPoder = 1;
-        MostrarPantallaParaJugadorActual();
+        bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
+        
+        if (esMulti)
+        {
+            MostrarPantallaParaJugador(1);
+            MostrarPantallaParaJugador(2);
+        }
+        else
+        {
+            MostrarPantallaParaJugador(1);
+        }
     }
 
-    private void MostrarPantallaParaJugadorActual()
+    private void MostrarPantallaParaJugador(int numeroJugador)
     {
+        Debug.Log("[NivelManager] Mostrando panel para Jugador " + numeroJugador);
         Debug.Log("[NivelManager] Poderes: " + (PowerUpManager.Instance != null ? PowerUpManager.Instance.todosLosPoderes.Count.ToString() : "PowerUpManager NULO"));
-        Debug.Log("[NivelManager] Botones: " + (botonesPoder != null ? botonesPoder.Length.ToString() : "NULL"));
 
-        if (panelSeleccionPoder == null)
+        if (PowerUpManager.Instance == null || PowerUpManager.Instance.todosLosPoderes == null || PowerUpManager.Instance.todosLosPoderes.Count == 0)
         {
-            Debug.LogError("[NivelManager] panelSeleccionPoder es NULO!");
-            return;
-        }
-
-        if (PowerUpManager.Instance == null)
-        {
-            Debug.LogError("[NivelManager] PowerUpManager.Instance es NULO!");
-            return;
-        }
-
-        if (PowerUpManager.Instance.todosLosPoderes == null || PowerUpManager.Instance.todosLosPoderes.Count == 0)
-        {
-            Debug.LogError("[NivelManager] todosLosPoderes está vacío o es NULO! Asegúrate de asignar los ScriptableObjects en el Inspector del PowerUpManager.");
-            return;
-        }
-
-        if (botonesPoder == null || botonesPoder.Length == 0)
-        {
-            Debug.LogError("[NivelManager] botonesPoder está vacío o es NULO!");
+            Debug.LogError("[NivelManager] PowerUpManager o poderes no disponibles!");
             return;
         }
 
         Time.timeScale = 0f;
-        panelSeleccionPoder.SetActive(true);
 
-        if (textoNivel != null)
-            textoNivel.text = "Nivel " + (GameManager.Instance.rondaActual + 1);
+        // Seleccionar panel según jugador
+        GameObject panelActual = (numeroJugador == 1) ? panelSeleccionPoder : panelSeleccionPoderP2;
+        TextMeshProUGUI textoNivelActual = (numeroJugador == 1) ? textoNivel : textoNivelP2;
+        TextMeshProUGUI textoTituloActual = (numeroJugador == 1) ? textoTituloSeleccion : textoTituloSeleccionP2;
+        Image[] iconosActuales = (numeroJugador == 1) ? iconosPoder : iconosPoderP2;
+        TextMeshProUGUI[] nombresActuales = (numeroJugador == 1) ? nombresPoder : nombresPoderP2;
+        TextMeshProUGUI[] descripcionesActuales = (numeroJugador == 1) ? descripcionesPoder : descripcionesPoderP2;
+        Button[] botonesActuales = (numeroJugador == 1) ? botonesPoder : botonesPoderP2;
 
-        if (textoTituloSeleccion != null)
+        if (panelActual != null)
+            panelActual.SetActive(true);
+
+        if (textoNivelActual != null)
+            textoNivelActual.text = "Nivel " + (GameManager.Instance.rondaActual + 1);
+
+        if (textoTituloActual != null)
+            textoTituloActual.text = "Elige un poder, Jugador " + numeroJugador;
+
+        // Elegir poderes aleatorios para este jugador
+        List<PowerUpData> opcionesJugador = ElegirPoderesAleatoriosParaJugador(numeroJugador);
+        Debug.Log("[NivelManager] Opciones para J" + numeroJugador + ": " + opcionesJugador.Count);
+
+        if (botonesActuales == null)
         {
-            bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
-            if (esMulti)
-                textoTituloSeleccion.text = "Elige un poder, Jugador " + jugadorElegiendoPoder;
-            else
-                textoTituloSeleccion.text = "Elige un poder";
+            Debug.LogError("[NivelManager] botonesPoder" + (numeroJugador == 2 ? "P2" : "") + " es NULO!");
+            return;
         }
 
-        opcionesActuales = ElegirPoderesAleatorios();
-
-        Debug.Log("[NivelManager] Opciones elegidas: " + opcionesActuales.Count);
-
-        for (int i = 0; i < botonesPoder.Length; i++)
+        for (int i = 0; i < botonesActuales.Length; i++)
         {
-            if (botonesPoder[i] == null)
-            {
-                Debug.LogWarning("[NivelManager] botonesPoder[" + i + "] es NULO!");
-                continue;
-            }
+            if (botonesActuales[i] == null) continue;
 
-            if (i < opcionesActuales.Count)
+            if (i < opcionesJugador.Count)
             {
-                PowerUpData poder = opcionesActuales[i];
-                
+                PowerUpData poder = opcionesJugador[i];
                 if (poder == null)
                 {
-                    Debug.LogWarning("[NivelManager] poder en índice " + i + " es NULO!");
-                    botonesPoder[i].gameObject.SetActive(false);
+                    botonesActuales[i].gameObject.SetActive(false);
                     continue;
                 }
 
-                Debug.Log("[NivelManager] Configurando botón " + i + " con poder: " + poder.nombre);
+                Debug.Log("[NivelManager] J" + numeroJugador + " - Botón " + i + ": " + poder.nombre);
 
-                if (iconosPoder != null && i < iconosPoder.Length && iconosPoder[i] != null)
+                if (iconosActuales != null && i < iconosActuales.Length && iconosActuales[i] != null)
                 {
-                    iconosPoder[i].sprite = poder.icono;
-                    iconosPoder[i].enabled = true;
-                    Debug.Log("[NivelManager] Icono asignado: " + (poder.icono != null ? poder.icono.name : "NULL"));
-                }
-                else
-                {
-                    Debug.LogWarning("[NivelManager] iconosPoder[" + i + "] es NULO o no existe!");
+                    iconosActuales[i].sprite = poder.icono;
+                    iconosActuales[i].enabled = true;
                 }
 
-                if (nombresPoder != null && i < nombresPoder.Length && nombresPoder[i] != null)
+                if (nombresActuales != null && i < nombresActuales.Length && nombresActuales[i] != null)
                 {
-                    nombresPoder[i].text = poder.nombre;
-                    nombresPoder[i].enabled = true;
-                    nombresPoder[i].gameObject.SetActive(true);
-                }
-                else
-                {
-                    Debug.LogWarning("[NivelManager] nombresPoder[" + i + "] es NULO o no existe!");
+                    nombresActuales[i].text = poder.nombre;
+                    nombresActuales[i].enabled = true;
+                    nombresActuales[i].gameObject.SetActive(true);
                 }
 
-                if (descripcionesPoder != null && i < descripcionesPoder.Length && descripcionesPoder[i] != null)
+                if (descripcionesActuales != null && i < descripcionesActuales.Length && descripcionesActuales[i] != null)
                 {
-                    descripcionesPoder[i].text = poder.descripcion;
-                    descripcionesPoder[i].enabled = true;
-                    descripcionesPoder[i].gameObject.SetActive(true);
-                }
-                else
-                {
-                    Debug.LogWarning("[NivelManager] descripcionesPoder[" + i + "] es NULO o no existe!");
+                    descripcionesActuales[i].text = poder.descripcion;
+                    descripcionesActuales[i].enabled = true;
+                    descripcionesActuales[i].gameObject.SetActive(true);
                 }
 
-                Button boton = botonesPoder[i];
+                Button boton = botonesActuales[i];
                 boton.gameObject.SetActive(true);
                 boton.onClick.RemoveAllListeners();
                 int opcionIndex = i;
-                boton.onClick.AddListener(() => SeleccionarPoder(opcionIndex));
+                int jugadorRef = numeroJugador;
+                boton.onClick.AddListener(() => SeleccionarPoderParaJugador(jugadorRef, opcionIndex));
             }
             else
             {
-                botonesPoder[i].gameObject.SetActive(false);
+                botonesActuales[i].gameObject.SetActive(false);
             }
         }
     }
 
-    private List<PowerUpData> ElegirPoderesAleatorios()
+    private List<PowerUpData> ElegirPoderesAleatoriosParaJugador(int numeroJugador)
     {
         List<PowerUpData> poderDisponible = new List<PowerUpData>();
-        ControlAvion jugador = FindObjectOfType<ControlAvion>();
-
-        Debug.Log("[NivelManager] Total poderes en PowerUpManager: " + PowerUpManager.Instance.todosLosPoderes.Count);
+        
+        // Buscar el avión del jugador específico
+        ControlAvion[] todosLosAviones = FindObjectsOfType<ControlAvion>();
+        ControlAvion jugadorAvion = null;
+        
+        foreach (ControlAvion avion in todosLosAviones)
+        {
+            if (avion.numeroJugador == numeroJugador)
+            {
+                jugadorAvion = avion;
+                break;
+            }
+        }
 
         foreach (PowerUpData p in PowerUpManager.Instance.todosLosPoderes)
         {
-            if (p == null)
-            {
-                Debug.LogWarning("[NivelManager] Encontrado poder NULO en la lista, saltando...");
-                continue;
-            }
+            if (p == null) continue;
 
-            if (p.tipo == PowerUpType.DobleDisparo && jugador != null && jugador.tieneDobleDisparo)
-            {
-                Debug.Log("[NivelManager] Excluyendo DobleDisparo porque el jugador ya lo tiene");
+            if (p.tipo == PowerUpType.DobleDisparo && jugadorAvion != null && jugadorAvion.tieneDobleDisparo)
                 continue;
-            }
             
-            Debug.Log("[NivelManager] Poder disponible: " + p.nombre);
             poderDisponible.Add(p);
         }
-
-        Debug.Log("[NivelManager] Poderes disponibles después de filtrar: " + poderDisponible.Count);
 
         List<PowerUpData> elegidos = new List<PowerUpData>();
 
@@ -203,38 +198,45 @@ public class NivelManager : MonoBehaviour
         {
             int indice = Random.Range(0, poderDisponible.Count);
             elegidos.Add(poderDisponible[indice]);
-            Debug.Log("[NivelManager] Poder elegido " + i + ": " + poderDisponible[indice].nombre);
             poderDisponible.RemoveAt(indice);
         }
 
         return elegidos;
     }
 
-    public void SeleccionarPoder(int indice)
+    public void SeleccionarPoderParaJugador(int numeroJugador, int indice)
     {
-        if (indice < 0 || indice >= opcionesActuales.Count)
+        List<PowerUpData> opcionesJugador = ElegirPoderesAleatoriosParaJugador(numeroJugador);
+        
+        if (indice < 0 || indice >= opcionesJugador.Count)
             return;
+
+        PowerUpData poderSeleccionado = opcionesJugador[indice];
 
         if (PowerUpManager.Instance != null)
         {
-            PowerUpManager.Instance.ApplyPowerUp(opcionesActuales[indice], jugadorElegiendoPoder);
+            PowerUpManager.Instance.ApplyPowerUp(poderSeleccionado, numeroJugador);
         }
+
+        // Ocultar el panel de este jugador
+        GameObject panelActual = (numeroJugador == 1) ? panelSeleccionPoder : panelSeleccionPoderP2;
+        if (panelActual != null)
+            panelActual.SetActive(false);
 
         bool esMulti = PlayerPrefs.GetInt("Multijugador", 0) == 1;
 
-        if (esMulti && jugadorElegiendoPoder == 1)
+        // Si es multijugador y ambos han elegido, continuar
+        // Si es un jugador, continuar inmediatamente
+        if (!esMulti || numeroJugador == 2)
         {
-            jugadorElegiendoPoder = 2;
-            MostrarPantallaParaJugadorActual();
-        }
-        else
-        {
-            if (panelSeleccionPoder != null)
-                panelSeleccionPoder.SetActive(false);
-
             Time.timeScale = 1f;
             StartCoroutine(TransicionANuevaRonda());
         }
+    }
+
+    public void SeleccionarPoder(int indice)
+    {
+        SeleccionarPoderParaJugador(jugadorElegiendoPoder, indice);
     }
 
     IEnumerator TransicionANuevaRonda()

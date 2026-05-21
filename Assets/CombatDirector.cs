@@ -64,17 +64,21 @@ public class CombatDirector : MonoBehaviour
                 Transform spawnPunto = SeleccionarPuntoSpawnValido();
                 if (spawnPunto != null)
                 {
-                    // Spawn para Jugador 1
-                    GameObject enemigo1 = ObjectPool.Instance.SpawnFromPool(tagEnemigo, spawnPunto.position, Quaternion.identity);
+                    // Spawn para Jugador 1 - posición aleatoria en su mundo (Y entre 1 y 9)
+                    Vector3 posP1 = spawnPunto.position;
+                    posP1.y = Random.Range(1f, 9f);
+                    
+                    GameObject enemigo1 = ObjectPool.Instance.SpawnFromPool(tagEnemigo, posP1, Quaternion.identity);
                     ConfigurarSaludEnemigo(enemigo1);
-                    // Asignar layer de P1 si estamos en multijugador
                     if (esMulti && MultiplayerManager.Instance != null && MultiplayerManager.Instance.layerP1 >= 0)
                         MultiplayerManager.AsignarLayerRecursivo(enemigo1, MultiplayerManager.Instance.layerP1);
 
-                    // Spawn para Jugador 2 (offset en Y de -10, ya que P2 está en y=-5 y P1 en y=5)
+                    // Spawn para Jugador 2 - posición aleatoria en su mundo (Y entre -9 y -1)
                     if (esMulti)
                     {
-                        Vector3 posP2 = spawnPunto.position + new Vector3(0, -10f, 0);
+                        Vector3 posP2 = spawnPunto.position;
+                        posP2.y = Random.Range(-9f, -1f);
+                        
                         Collider2D colision = Physics2D.OverlapCircle(posP2, radioComprobacionSpawn, capaEnemigos);
                         if (colision == null)
                         {

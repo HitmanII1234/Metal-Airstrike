@@ -8,6 +8,10 @@ public class ControlAvion : MonoBehaviour
     public float limitesVerticales = 4f;
     public float limitesHorizontales = 8f; 
 
+    [Header("Restricción Multijugador")]
+    public float minYMultiplayer = 0f;
+    public float maxYMultiplayer = 10f;
+
     [Header("Disparo")]
     public string tagBala = "BalaJugador";
     public Transform puntoDisparo;
@@ -86,7 +90,26 @@ public class ControlAvion : MonoBehaviour
         if (Mathf.Abs(entradaHorizontal) > 0.1f)
             xDeseada += entradaHorizontal * fuerzaEmpuje * Time.deltaTime;
 
-        yDeseada = Mathf.Clamp(yDeseada, -limitesVerticales, limitesVerticales);
+        float minY = -limitesVerticales;
+        float maxY = limitesVerticales;
+
+        if (esMulti)
+        {
+            if (numeroJugador == 1)
+            {
+                // Jugador 1: su mundo va de Y=0 a Y=10
+                minY = 0f;
+                maxY = 10f;
+            }
+            else if (numeroJugador == 2)
+            {
+                // Jugador 2: su mundo va de Y=-10 a Y=0
+                minY = -10f;
+                maxY = 0f;
+            }
+        }
+
+        yDeseada = Mathf.Clamp(yDeseada, minY, maxY);
         xDeseada = Mathf.Clamp(xDeseada, -limitesHorizontales, limitesHorizontales);
 
         transform.position = new Vector3(
